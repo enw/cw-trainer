@@ -14,6 +14,8 @@ them as dits and dahs while showing the current word and/or letter.
 
 The user will request each stage: grilling, then spec, then tickets, then
 implementation. Do not advance to the next stage without that request.
+Commit completed work incrementally. Review status and stage only intended
+files before each commit; do not push unless requested.
 During grilling, ask one decision at a time. Capture approved requirements in
 the spec before creating tickets or implementing the app.
 

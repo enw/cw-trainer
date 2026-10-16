@@ -1,0 +1,14 @@
+# 05 — Follow along or listen without seeing the answer
+
+**What to build:** Choose whole-item display, synchronized character highlighting, or hidden text with manual reveal, independently of playback style.
+
+**Blocked by:** 03 — Tune and remember each list's practice settings; 04 — Practice continuous prosigns and mixed phrases.
+
+**Status:** draft — breakdown awaiting review
+
+- [ ] Default to whole-item display; let the learner select and persist another display mode for each list.
+- [ ] Highlight the current ordinary character using the audio timing basis. Highlight an entire prosign as one unit.
+- [ ] Hidden mode conceals answer text in the practice view, including titles/previews/progress; R reveals the current item.
+- [ ] Proposed default: a revealed answer remains visible across repetitions and hides when the item changes, including navigation back to it.
+- [ ] Keep highlighting correct across pauses, cancellations, and next-repetition speed changes.
+- [ ] Verify visible output via session events and a real terminal synchronization check; document limits of automated timing evidence.
