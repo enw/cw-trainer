@@ -237,10 +237,10 @@ The edge behaviors discussed during specification are resolved in the
 [ticket 00 UI design](../../docs/design/terminal-ui.md) and
 [playback architecture](../../docs/design/playback-architecture.md).
 Those documents are the single source for navigation, pause/resume, speech
-counts, shuffle, reveal lifetime, and playback-unit transitions. The user approved
-the design and ticket 01 implementation. The walking skeleton now has software
-and real-output lifecycle verification; final listening acceptance is still
-pending. See the [verification record](../../docs/design/skeleton-verification.md).
+counts, shuffle, reveal lifetime, and playback-unit transitions. The user approved the design, ticket 01, and then the remaining 02–10 build.
+The complete implementation has software and real-output lifecycle verification;
+final human listening acceptance is still pending. See the
+[verification record](../../docs/design/complete-verification.md).
 
 ## Requested follow-ups (2026-10-16)
 

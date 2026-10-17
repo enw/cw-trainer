@@ -1,102 +1,146 @@
 # cw-looper
 
-A macOS terminal app for learning familiar CW sounds. The current walking
-skeleton contains a saved two-station call/answer exchange with **KE2ISH**.
-Each line repeats until you move on; you can pause or request its spoken phrase.
+A macOS terminal app for recognizing familiar CW sounds: your callsign,
+common terms, continuous prosigns, and two-station exchanges. Start with
+**KE2ISH**, repeat one item until ready, and optionally reinforce it with speech.
 
 ## Run
 
-Requires Go 1.26+ and macOS with `/usr/bin/say` and a configured audio output.
-The tested development platform is macOS 26.6.2 on Apple silicon. Other macOS
-versions/architectures have not been verified.
+Requires Go 1.26+, macOS, `/usr/bin/say`, and a configured audio output.
+Tested on macOS 26.6.2, Apple silicon. Use a terminal at least 80 × 24.
 
 ```sh
 go run ./cmd/cw-looper
-```
-
-Or build a binary:
-
-```sh
+# Or build and run:
 go build -o bin/cw-looper ./cmd/cw-looper
 ./bin/cw-looper
 ```
 
-Use a terminal at least 80 columns × 24 rows. First launch saves a small practice
-library. Enter opens the list, then exchange, then starts the selected line.
-Browsing does not play sound.
+First launch installs four editable lists: callsign, common terms, prosigns,
+and exchanges. Enter opens a list; Enter on an ordinary item starts practice.
+For an exchange, open it and then start a selected line. Browsing is silent.
+An eight-line example contact is included. Names, reports and locations are
+practice examples, not a real contact; [content sources](docs/design/content-sources.md).
+
+## Controls and editing
 
 | Control | Browse | Practice |
 | --- | --- | --- |
-| ↑/↓ or k/j | Select | No action |
-| Enter or l | Open/start | Enter retries a failed output |
-| ←/→ or h/l | Back/open | Previous/next line; stops at the ends |
-| [ / ] | — | Previous/next exchange; stops at the ends |
+| ↑/↓ or k/j | Select | — |
+| Enter or l | Open/start | Enter retries a failure |
+| ←/→ or h/l | Back/open | Previous/next item or exchange line |
+| [ / ] | — | Previous/next top-level item/exchange |
 | Space | — | Pause/resume |
-| s | — | Speak current phrase |
-| Esc | Back | Stop and return to line selection |
-| ? | Help | Help (playback continues) |
-| q or Ctrl+C | Quit | Stop output and quit |
+| s / S | — | Speak current phrase now |
+| r / R | — | Toggle answer reveal |
+| p | List settings (inside a list) | Settings overlay; playback continues |
+| a | Add list, ordinary item or exchange line | — |
+| A | Add an exchange inside a list | — |
+| e / x | Edit / delete selected material | — |
+| J / K | Move selected material down / up | — |
+| i | Import fresh starter copies from Lists | — |
+| Esc | Back | Stop and return to library |
+| ? | Help | Help; playback continues |
+| q | Quit | Stop and quit |
+| Ctrl+C | Emergency exit | Stop and exit; report unsaved changes |
 
-Pause restarts interrupted CW/speech from the beginning of that portion; a
-paused gap resumes its remaining time. Navigation stays silent while paused.
-Speak-now while paused returns to paused; while running, it speaks and then
-restarts CW after the gap. Switching lines cancels the old output first.
+Forms use Tab / Shift+Tab to move fields, Ctrl+S to accept/save, and Esc to
+cancel. Ordinary shortcut letters are text while a field has focus; pasting
+works too. Ctrl+P in a CW field opens the prosign picker. Confirm deletion with
+y; Esc/n cancels. To edit exchange lines, open the exchange first; e on its
+list entry renames it. An exchange must retain at least one line.
 
-This slice uses fixed **20 WPM character / 15 WPM overall** Farnsworth timing,
-**440 Hz for You / 600 Hz for Other**, and **2-second practice gaps**. It shows
-the complete current line. Editors, configurable settings, prosigns, alternate
-displays, reinforcement patterns, cycle/shuffle, and automatic exchange
-advancement belong to later tickets.
+Spoken overrides are optional. Clear the spoken field to use generated speech:
+CQ is “see cue,” callsigns are spelled, words are read naturally, and prosigns
+use their meanings. Custom speech survives CW edits, so review it after changing
+CW. Overrides and all accepted settings save automatically.
 
-## Saved material
+## Practice settings
 
-The library is stored at:
+Type the listed choice in its settings field, then Ctrl+S to save the form.
+Tab scrolls to the remaining fields in shorter terminals.
+
+| Setting | Default | Choices / bounds |
+| --- | --- | --- |
+| Character / overall speed | 20 / 15 WPM | 5–60, overall ≤ character |
+| Your / other tone | 440 / 600 Hz | 100–2000 Hz |
+| Pause | 2 seconds | 0–30 seconds |
+| Display | `whole` | `whole`, `highlight`, `hidden` |
+| Playback | `cw` | `cw`, `sandwich`, `occasional` |
+| Speech interval | 5 CW repetitions | 1–100 |
+| Sequence | `repeat` | `repeat`, `cycle`, `shuffle` |
+| Exchange lines | `manual` | `manual`, `automatic` |
+
+Farnsworth timing keeps characters at character speed and stretches the
+spacing to achieve overall speed. Equal speeds use standard spacing.
+
+- `cw`: CW only. `sandwich`: CW → speech → CW. `occasional`: N complete CW
+  repetitions → speech, beginning with CW. One configured gap separates portions.
+- `repeat` stays on the current item. `cycle` wraps. `shuffle` visits each
+  top-level item once per round. Advancement waits for the entire practice unit.
+- Manual exchange lines repeat until Next, even with cycle/shuffle. Automatic
+  lines retain conversational order; after the last line, repeat restarts that
+  exchange, while cycle/shuffle selects the next top-level entry.
+- `highlight` brackets the current character or entire prosign using estimated
+  PCM consumption. `hidden` conceals the answer and title until R; reveal lasts
+  across repetitions but resets on item/line changes.
+- Pause restarts interrupted CW or speech from that portion's beginning. Gaps
+  retain their remaining duration. Navigation stays silent while paused.
+- Speak-now cancels the current portion, resets its unit, speaks, then resumes
+  CW after the gap. From paused, it speaks once and returns to paused.
+- Speed/tone changes apply at the next CW rendering; interval changes at the
+  next practice unit. Style/sequence/line-mode changes restart the unit through
+  cancellation, preserving pause. Display changes apply immediately.
+
+## Saved material and recovery
+
+Data lives outside the binary, so replacing the application preserves it:
 
 ```text
 ~/Library/Application Support/cw-looper/library.json
 ```
 
-Use `--data /path/to/library.json` for a separate practice library. Only one app
-may open a given library at once. The initial W1AW/KE2ISH fixture is example
-practice text, not a real contact or recording.
+Use `--data /path/to/library.json` for a separate library. Existing skeleton
+installations remain unchanged; press i in Lists to explicitly add fresh starter
+copies. Imports never replace existing lists. Deliberately empty libraries/lists
+remain empty. Only one app may open a library at a time.
 
-Until the editor slice is implemented, quit the app and edit its JSON to change
-exchange titles, lines, station roles (`learner` or `other`), and explicit spoken
-phrases. Keep IDs unique and settings at the fixed preset. Supported CW input
-is A–Z, 0–9, and spaces; lowercase is played as uppercase. Maximum CW length is
-512 bytes and spoken text 1024 bytes. Newline/control characters are rejected.
+Supported CW: A–Z, 0–9, spaces, and `<AR>`, `<AS>`, `<BT>`, `<SK>`, `<HH>`.
+Lowercase is normalized. Prosigns are continuous; ordinary `AR` has a letter
+gap. Punctuation and unknown tokens are rejected. Limits: 512 bytes of CW,
+1024 bytes of spoken text, 100 lists, 100 entries per list, 100 lines per exchange.
+An ordinary item's title is a shortened preview; its CW text is preserved in full.
 
-Existing empty libraries remain empty. Invalid or future-version data is reported
-without replacement. Correct the file and relaunch; do not delete your library
-as an automatic recovery step. Accepted saves use a temporary file, file sync,
-rename, and directory sync. A companion `.lock` file may remain after exit;
-the OS releases the lock when the process exits, so do not delete it to bypass
-another running instance.
+Invalid/future-version files are reported and preserved. Correct the file or
+restore your backup, then relaunch. Saves use temporary-file sync and atomic
+rename. A save failure leaves edits in memory marked **Not saved**; Ctrl+S retries.
+Normal quit waits for a pending save and confirms discarding known unsaved edits;
+Ctrl+C exits without trapping you behind confirmation and reports unsaved changes.
+A companion `.lock` file can remain after exit; the OS releases its lock. Do not
+remove it to bypass another running app.
 
-Audio initialization/device failures may require checking the system output and
-restarting the app. Speech failures allow CW practice to continue after retrying
-or restarting CW with Enter. The speech process is invoked directly with stdin
-text; no shell evaluates your phrases. Neither backend requires a network service.
-Switching audio devices during a session is not yet verified; restart afterward.
+Audio errors may require selecting a working system output and restarting.
+For a speech failure, retry with Enter or set playback to `cw`. A failing backend
+stops instead of looping. Speech text goes directly to macOS `say` on stdin;
+no shell evaluates it. Audio/speech need no network service. Switching audio
+devices mid-session is not verified; restart afterward.
 
-## Verify
+## Verification and remaining acceptance
 
 ```sh
 go test ./...
 go test -race ./...
 go vet ./...
-# This deliberately plays tones and speech through the Mac's output:
+# Deliberately plays tones and speech on the Mac:
 CW_REAL_AUDIO=1 go test -v ./internal/output -run TestMacOutputLifecycle -count=1
 ```
 
-Tests cover independently calculated Morse timing, actual PCM duration/frequency,
-load/save preservation and locking, session interruption rules, and terminal
-navigation. Real audio tests are opt-in. Software stop/reap timings do **not**
-prove acoustic silence or sound quality; see the
-[verification record](docs/design/skeleton-verification.md) for observed results
-and outstanding listening checks.
+The [complete verification record](docs/design/complete-verification.md) separates
+automated checks, actual Mac output and PTY observations from human listening.
+Audio quality, perceived highlighting synchronization, speech pronunciation and
+acoustic stop tails still need listening acceptance. API cleanup timing cannot
+prove silence at the speaker.
 
-The [dependency map](.scratch/cw-practice/map.md) is the single implementation
-plan. The [UI](docs/design/terminal-ui.md) and
-[architecture](docs/design/playback-architecture.md) describe the complete design,
-including features not present in the walking skeleton.
+The [dependency map](.scratch/cw-practice/map.md) indexes the completed 00–10
+implementation and queued 11–12 follow-ups. See also the [UI design](docs/design/terminal-ui.md)
+and [architecture](docs/design/playback-architecture.md).

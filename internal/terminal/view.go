@@ -19,7 +19,7 @@ func (m *Model) View() tea.View {
 	case m.confirm != nil:
 		content = m.confirm.prompt + "\n\ny confirm · Esc/n cancel (default)"
 	case m.help:
-		content = "cw-looper · Help\n\nBrowse: arrows or j/k select; Enter/l opens; Esc/h goes back.\nPractice: Space pauses; h/l or arrows change lines; [/] change items.\ns speaks the current phrase; Esc stops and returns; q quits.\n\nPause restarts interrupted CW/speech; gaps resume their remainder.\nNavigation stays silent while paused. Lines repeat until you advance.\n\nThis skeleton has fixed 20/15 WPM, 440/600 Hz and 2-second gaps.\nEditing and other modes arrive in later slices.\n\n? or Esc closes help · q quit"
+		content = "cw-looper · Help\n\nBrowse: j/k or arrows select; Enter/l opens; Esc/h returns.\na adds a list/item/line; A adds an exchange; e edits; x deletes.\nJ/K reorder; i imports starter copies from Lists.\n\nPractice: Space pauses; h/l or arrows change item/line.\n[/] change top-level items; R reveals; s speaks now.\np edits per-list settings; Esc stops and returns; q quits.\nManual exchange lines repeat until Next; automatic lines stay ordered.\n\nStyles: cw = CW only; sandwich = CW-talk-CW; occasional = N CW, talk.\nCycle/shuffle advance only after a complete practice unit.\nPause restarts an interrupted CW/speech portion; gaps retain remainder.\nNavigation stays silent while paused. Settings/help keep playing.\n\nForms: Tab fields; Ctrl+P prosigns; Ctrl+S saves; Esc cancels.\nClear a spoken override to restore generated speech.\n? or Esc closes help · q quit"
 	case m.screen == practice:
 		content = m.practiceView()
 	default:
@@ -56,7 +56,11 @@ func (m *Model) browseView() string {
 		}
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "cw-looper · Saved\n\n%s\n\n", title)
+	saved := "Saved"
+	if m.dirty {
+		saved = "Not saved"
+	}
+	fmt.Fprintf(&b, "cw-looper · %s\n\n%s\n\n", saved, title)
 	if len(rows) == 0 {
 		b.WriteString("No saved material. Press a to add.\n")
 	}
@@ -68,7 +72,7 @@ func (m *Model) browseView() string {
 		}
 		fmt.Fprintf(&b, "%s %s\n", marker, clip(rows[i], m.width-4))
 	}
-	b.WriteString("\nj/k select · Enter open · a item/line · A exchange · e edit · x delete · J/K reorder\np settings · i import starters (Lists) · Esc/h back · ? help · q quit")
+	b.WriteString("\nj/k select · Enter open · a add · A exchange · e edit · x delete\nJ/K reorder · p settings · i import (Lists) · Esc back · ? help · q quit")
 	return b.String()
 }
 func (m *Model) practiceView() string {
@@ -96,11 +100,12 @@ func (m *Model) practiceView() string {
 		}
 	}
 	status := string(m.session.Phase)
-	if m.session.Settings != config {
+	pending := m.session.Settings
+	if pending.CharacterWPM != config.CharacterWPM || pending.OverallWPM != config.OverallWPM || pending.LearnerHz != config.LearnerHz || pending.OtherHz != config.OtherHz {
 		status += " · Settings pending next CW"
 	}
 	if m.session.Phase == session.Paused {
-		status += " · Space restarts the interrupted portion"
+		status += "\nSpace restarts the interrupted portion"
 	}
 	if m.session.Phase == session.Failed && m.session.Settings.Display == "hidden" && !m.session.Revealed {
 		status = "Playback failed · Enter retries; Esc for details in library"
@@ -108,16 +113,24 @@ func (m *Model) practiceView() string {
 		status = wrap(m.session.Err.Error(), m.width-6) + "\nEnter retries · restart app if indicated"
 	}
 	boundary := ""
+	if m.session.Settings.Style == "occasional" {
+		boundary = fmt.Sprintf("Speech every %d CW", m.session.SpeechEvery())
+		if m.session.SpeechEvery() != m.session.Settings.SpeechInterval {
+			boundary += fmt.Sprintf(" · next unit: %d", m.session.Settings.SpeechInterval)
+		}
+		boundary += "\n"
+	}
 	if m.data.Lists[m.list].Entries[m.entry].Kind == "exchange" {
-		boundary = "Automatic lines: ordered progression\n"
 		if m.session.Settings.LineAdvancement == "manual" {
-			boundary = "Manual lines: press Next\n"
+			boundary += "Manual lines: press Next\n"
+		} else {
+			boundary += "Automatic lines: ordered progression\n"
 		}
 	}
 	if m.session.Line == len(m.currentLines())-1 {
 		boundary += "Last line · ] next item or Esc library\n"
 	}
-	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %.0f Hz\n\n%s\n\n%s · Completed: %d\n%g character / %g overall WPM · Pause %g s\n%s · %s · %s\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · R reveal · p settings · Esc library · ? help · q quit",
+	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %.0f Hz\n\n%s\n\n%s · Completed: %d\n%g character / %g overall WPM · Pause %g s\n%s · %s · %s\n\n%sSpace pause · h/l or arrows previous/next line\n[/] item · s speak · R reveal · p settings\nEsc library · ? help · q quit",
 		clip(title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, config.CharacterWPM, config.OverallWPM, m.session.Settings.PauseSeconds, m.session.Settings.Display, m.session.Settings.Style, m.session.Settings.Sequence, boundary)
 }
 func station(line library.Line) (string, int) {

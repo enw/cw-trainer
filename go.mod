@@ -3,12 +3,12 @@ module cw-looper
 go 1.26.0
 
 require (
+	charm.land/bubbles/v2 v2.2.1
 	charm.land/bubbletea/v2 v2.1.0
 	github.com/ebitengine/oto/v3 v3.5.1
 )
 
 require (
-	charm.land/bubbles/v2 v2.2.1 // indirect
 	charm.land/lipgloss/v2 v2.0.5 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect

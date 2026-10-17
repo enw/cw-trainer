@@ -20,18 +20,19 @@ const (
 )
 
 type Model struct {
-	data                library.Library
-	runner              *output.Runner
-	session             *session.Session
-	screen              screen
-	list, entry, cursor int
-	width, height       int
-	help                bool
-	form                *form
-	confirm             *confirmation
-	save                func(library.Library) error
-	saving, dirty       bool
-	notice              string
+	data                     library.Library
+	runner                   *output.Runner
+	session                  *session.Session
+	screen                   screen
+	list, entry, cursor      int
+	width, height            int
+	help                     bool
+	form                     *form
+	confirm                  *confirmation
+	save                     func(library.Library) error
+	saving, dirty            bool
+	exitAfterSave, forceExit bool
+	notice                   string
 }
 
 func New(data library.Library, runner *output.Runner, save ...func(library.Library) error) *Model {
@@ -59,6 +60,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.dirty = false
 			m.notice = "Saved"
 		}
+		if m.exitAfterSave {
+			return m, tea.Quit
+		}
 		return m, nil
 	case session.Input:
 		return m, m.dispatch(msg)
@@ -70,9 +74,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		key := msg.String()
 		if key == "ctrl+c" {
+			m.forceExit = true
 			return m, m.dispatch(session.Input{Kind: session.Quit})
 		}
 		if m.saving {
+			if key == "q" {
+				return m, m.dispatch(session.Input{Kind: session.Quit})
+			}
+			if m.screen == practice {
+				return m, m.practiceKey(key)
+			}
 			return m, nil
 		}
 		if m.form != nil {
@@ -120,6 +131,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.screen == practice {
 			return m, m.dispatch(session.Input{Kind: session.Start})
 		}
+	default:
+		if m.form != nil && !m.form.picker {
+			f := m.form
+			var cmd tea.Cmd
+			f.fields[f.focus], cmd = f.fields[f.focus].Update(msg)
+			return m, cmd
+		}
 	}
 	return m, nil
 }
@@ -136,7 +154,11 @@ func (m *Model) applyEffects(effects []session.Effect) tea.Cmd {
 	exiting := false
 	for _, effect := range effects {
 		if effect.Kind == session.Exit {
-			cmds = append(cmds, tea.Quit)
+			if m.saving && !m.forceExit {
+				m.exitAfterSave = true
+			} else {
+				cmds = append(cmds, tea.Quit)
+			}
 			exiting = true
 			continue
 		}
@@ -263,3 +285,6 @@ type progressMsg struct{ id uint64 }
 func progressTick(id uint64) tea.Cmd {
 	return tea.Tick(25*time.Millisecond, func(time.Time) tea.Msg { return progressMsg{id} })
 }
+
+func (m *Model) Unsaved() bool { return m.dirty || m.saving }
+func (m *Model) Saving() bool  { return m.saving }

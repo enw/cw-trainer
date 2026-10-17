@@ -106,3 +106,15 @@ func TestProsignIsContinuousAndDistinctFromLetters(t *testing.T) {
 		t.Fatalf("prosign not a single display token: %d", len(mixed.Markers))
 	}
 }
+
+func TestAllProsignDurationsHaveOnlyElementGaps(t *testing.T) {
+	for token, units := range map[string]int64{"<AR>": 13, "<AS>": 11, "<BT>": 13, "<SK>": 15, "<HH>": 15} {
+		timeline, err := morse.Compile(token, 20, 15, false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if timeline.Samples != units*2880 || len(timeline.Markers) != 1 {
+			t.Fatalf("%s: wrong continuous timing", token)
+		}
+	}
+}

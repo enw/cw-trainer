@@ -196,12 +196,12 @@ func (m *Model) editKey(key string) tea.Cmd {
 	return m.openForm("Practice item · custom speech survives CW edits; review it", []string{"CW text", "Spoken override (clear to use generated speech)"}, []string{value, spoken}, func(v []string) (library.Library, error) {
 		data := clone(m.data)
 		text := strings.ToUpper(strings.TrimSpace(v[0]))
-		e := library.Entry{ID: id(), Kind: "item", Title: text, Lines: []library.Line{{ID: id(), Station: "learner", CW: text, Spoken: v[1]}}}
+		e := library.Entry{ID: id(), Kind: "item", Title: itemTitle(text), Lines: []library.Line{{ID: id(), Station: "learner", CW: text, Spoken: v[1]}}}
 		if key == "a" {
 			data.Lists[m.list].Entries = append(data.Lists[m.list].Entries, e)
 		} else {
 			old := &data.Lists[m.list].Entries[m.cursor]
-			old.Title = text
+			old.Title = itemTitle(text)
 			old.Lines[0].CW = text
 			old.Lines[0].Spoken = v[1]
 		}
@@ -264,4 +264,11 @@ func (m *Model) pickerView() string {
 	}
 	b.WriteString("\nEnter inserts · j/k moves · Esc cancels")
 	return b.String()
+}
+
+func itemTitle(text string) string {
+	if len(text) > 100 {
+		return text[:97] + "..."
+	}
+	return text
 }

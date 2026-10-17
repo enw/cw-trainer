@@ -6,40 +6,65 @@ import (
 	"unicode"
 )
 
-// Spoken follows CW edits until an explicit override is saved.
+// Spoken uses the same tokens as CW, including adjacent prosigns. Ordinary
+// spans are pronounced together so words stay natural and callsigns are spelled.
 func Spoken(line Line) string {
 	if line.Spoken != "" {
 		return line.Spoken
 	}
-	words := strings.Fields(strings.ToUpper(line.CW))
-	for i, word := range words {
-		for _, p := range morse.Prosigns {
-			word = strings.ReplaceAll(word, p.Token, " "+p.Meaning+" ")
-		}
-		if word != words[i] {
-			words[i] = strings.TrimSpace(word)
-			continue
-		}
-		switch word {
-		case "CQ":
-			words[i] = "see cue"
-		case "73":
-			words[i] = "seventy three"
-		default:
-			abbreviation := strings.Contains(" DE QTH QRS QRQ QRM QRN QSB QRL QRZ QRP QRO QSO QSY RST TU TNX HW CPY BK KN CL R K ES UR FB OM PSE WX ", " "+word+" ")
-			hasDigit, hasLetter := false, false
-			for _, r := range word {
-				hasDigit = hasDigit || unicode.IsDigit(r)
-				hasLetter = hasLetter || unicode.IsLetter(r)
-			}
-			if abbreviation || hasDigit && hasLetter || hasDigit && !hasLetter {
-				words[i] = spell(word)
-			} else {
-				words[i] = strings.ToLower(word)
-			}
+	tokens, err := morse.Tokens(strings.ToUpper(strings.TrimSpace(line.CW)))
+	if err != nil {
+		return line.CW
+	} // Validation normally rejects unsupported text.
+	var result []string
+	var word strings.Builder
+	flush := func() {
+		if word.Len() > 0 {
+			result = append(result, pronounce(word.String()))
+			word.Reset()
 		}
 	}
-	return strings.Join(words, " ")
+	for _, token := range tokens {
+		if token.WordGap {
+			flush()
+		}
+		if strings.HasPrefix(token.Text, "<") {
+			flush()
+			for _, p := range morse.Prosigns {
+				if p.Token == token.Text {
+					result = append(result, p.Meaning)
+					break
+				}
+			}
+		} else {
+			word.WriteString(token.Text)
+		}
+	}
+	flush()
+	return strings.Join(result, " ")
+}
+func pronounce(word string) string {
+	switch word {
+	case "CQ":
+		return "see cue"
+	case "73":
+		return "seventy three"
+	case "AGN":
+		return "again"
+	case "PSE":
+		return "please"
+	case "FER":
+		return "for"
+	}
+	abbreviation := strings.Contains(" DE QTH QRS QRQ QRM QRN QSB QRL QRZ QRP QRO QSO QSY RST TU TNX HW CPY BK KN CL R K ES UR FB OM WX ", " "+word+" ")
+	hasDigit := false
+	for _, r := range word {
+		hasDigit = hasDigit || unicode.IsDigit(r)
+	}
+	if abbreviation || hasDigit {
+		return spell(word)
+	}
+	return strings.ToLower(word)
 }
 func spell(word string) string {
 	digits := []string{"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}

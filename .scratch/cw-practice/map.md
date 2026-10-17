@@ -29,8 +29,12 @@ to delegate or implement concurrently. Each ticket verifies its own behavior;
 Ticket 00 design is approved and resolved. Ticket 01 is implemented and
 ready-for-human for final listening acceptance; see the
 [verification record](../../docs/design/skeleton-verification.md).
-Tickets 02–10 have not started. The current user request authorized only the
-walking skeleton. Software checks do not replace audible quality/tail validation.
+Tickets 02–09 are implemented and incrementally committed. Ticket 10 completes
+the integration and documentation on branch `complete-cw-practice`. The user
+authorized the remaining build on 2026-10-16. See the [complete verification
+record](../../docs/design/complete-verification.md) for tests and PTY/device
+evidence. Human listening acceptance remains pending; software checks do not
+replace audible quality/tail validation.
 
 ## Queued follow-ups
 

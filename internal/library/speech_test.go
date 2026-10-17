@@ -17,3 +17,14 @@ func TestGeneratedSpeechAndOverride(t *testing.T) {
 		t.Fatal("clearing override did not restore generated speech")
 	}
 }
+
+func TestAdjacentProsignsPreserveWordPronunciation(t *testing.T) {
+	for text, want := range map[string]string{
+		"KE2ISH<AR>":      "K E two I S H end of message",
+		"CQ<BT>HELLO<SK>": "see cue break hello end of contact",
+	} {
+		if got := Spoken(Line{CW: text}); got != want {
+			t.Fatalf("%s: %s", text, got)
+		}
+	}
+}

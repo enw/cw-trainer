@@ -57,3 +57,11 @@ func (s *Session) Configure(settings library.Settings, now time.Time) []Effect {
 	}
 	return nil
 }
+
+// SpeechEvery reports the interval captured for the active practice unit.
+func (s *Session) SpeechEvery() int {
+	if s.unitInterval > 0 {
+		return s.unitInterval
+	}
+	return s.Settings.SpeechInterval
+}
