@@ -4,16 +4,16 @@
 
 **Blocked by:** 09 — Curated editable starter library (implemented; reuses exchange and speech behavior). Independent of 11.
 
-**Status:** draft — queued follow-up; implementation not requested
+**Status:** implemented — source verified; automated checks, terminal walkthrough and review complete
 
-- [ ] Provide a readable terminal reference for readability 1–5, signal strength 1–9, and tone 1–9, using concise source-backed explanations and arrow/vi navigation.
-- [ ] Explain the order R–S–T and that CW reports use three ratings; voice reports omit tone.
-- [ ] Add a separate editable starter list of varied numeric reports, including 599, 579 and 339, with useful spoken prompts connecting each report to the three ratings.
-- [ ] Include a short two-station report exchange using KE2ISH and the existing example counterpart. Preserve line order and station tones through automatic practice.
-- [ ] Reuse the existing independent display, reinforcement and sequencing modes; conceal report answers until reveal in hidden practice.
-- [ ] Offer explicit non-destructive import for existing users and normal first-use seeding; retain edited/removed material and list settings after restart.
-- [ ] Verify rating ranges/order, source accuracy, report/exchange playback and speech, save/reload, hidden display, and existing-library preservation.
-- [ ] Document that examples teach report recognition and meaning; a clean synthesized tone does not simulate the strength, noise or tone quality described by a report.
+- [x] Provide a readable terminal reference for readability 1–5, signal strength 1–9, and tone 1–9, using concise source-backed explanations and arrow/vi navigation.
+- [x] Explain the order R–S–T and that CW reports use three ratings; voice reports omit tone.
+- [x] Add a separate editable starter list of varied numeric reports, including 599, 579 and 339, with useful spoken prompts connecting each report to the three ratings.
+- [x] Include a short two-station report exchange using KE2ISH and the existing example counterpart. Preserve line order and station tones through automatic practice.
+- [x] Reuse the existing independent display, reinforcement and sequencing modes; conceal report answers until reveal in hidden practice.
+- [x] Offer explicit non-destructive import for existing users and normal first-use seeding; retain edited/removed material and list settings after restart.
+- [x] Verify rating ranges/order, source accuracy, report/exchange playback and speech, save/reload, hidden display, and existing-library preservation.
+- [x] Document that examples teach report recognition and meaning; a clean synthesized tone does not simulate the strength, noise or tone quality described by a report.
 
 ## Source and scope
 

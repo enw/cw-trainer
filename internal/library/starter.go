@@ -8,7 +8,7 @@ import (
 // Starter is copied only into a missing library or on explicit import. It is
 // never merged into existing user data by version number.
 func Starter() Library {
-	data := Library{SchemaVersion: 1, SeedVersion: 3}
+	data := Library{SchemaVersion: 1, SeedVersion: 4}
 
 	data.Lists = append(data.Lists, starterItems("callsign", "My callsign · KE2ISH", [][2]string{{"KE2ISH", ""}, {"DE KE2ISH", ""}, {"CQ CQ DE KE2ISH K", ""}}))
 	data.Lists = append(data.Lists, starterItems("terms", "Common CW terms", [][2]string{
@@ -58,7 +58,7 @@ func Starter() Library {
 		"W1AW DE KE2ISH NAME ELLIOT ELLIOT K",
 		"R TNX FER QSO 73 <SK> KE2ISH DE W1AW",
 		"TU 73 <SK> W1AW DE KE2ISH")
-	data.Lists = append(data.Lists, exchanges, PhoneticStarter())
+	data.Lists = append(data.Lists, exchanges, PhoneticStarter(), RSTStarter())
 	return data
 }
 

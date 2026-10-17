@@ -50,8 +50,8 @@ go build -o bin/cw-looper ./cmd/cw-looper
 
 For a quick run without a separate build step: `go run ./cmd/cw-looper`.
 
-First launch installs five editable lists: callsign, common terms, prosigns,
-exchanges, and the NATO/ITU alphabet. Enter opens a list; Enter on an ordinary item starts practice.
+First launch installs six editable lists: callsign, common terms, prosigns,
+exchanges, the NATO/ITU alphabet, and RST reports. Enter opens a list; Enter on an ordinary item starts practice.
 For an exchange, open it and then start a selected line. Browsing is silent.
 An eight-line example contact is included. Names, reports and locations are
 practice examples, not a real contact; [content sources](docs/design/content-sources.md).
@@ -170,9 +170,10 @@ CQ is “see cue,” callsigns are spelled, words are read naturally, and prosig
 use their meanings. Custom speech survives CW edits, so review it after changing
 CW. Overrides and all accepted settings save automatically.
 
-## Operating reference and phonetic practice
+## Operating reference: NATO alphabet and RST
 
-Press **o** for the NATO/ITU alphabet. **j/k** or arrows scroll; **Esc/o** returns
+Press **o** for operating references. **h/l**, left/right arrows, or **Tab** switches
+between the NATO/ITU alphabet and RST scales. **j/k** or up/down arrows scroll; **Esc/o** returns
 without changing your practice selection. From browsing, **i** inside the
 reference imports just that editable list after confirmation. Top-level **i**
 continues to import all starter lists. Existing edits and deletions are preserved.
@@ -181,6 +182,13 @@ The phonetic list sends each individual letter in CW and uses its standardized
 word as an editable spoken prompt: `A` CW → “Alfa” → `A` CW. It defaults to
 `sandwich`; all display, sequence and speech controls still apply. This does not
 change the normal letter-name speech for callsigns elsewhere.
+
+The RST list includes `599`, `579`, `339`, `449`, and `567`, with spoken prompts
+explaining each Readability–Strength–Tone rating. A KE2ISH/W1AW exchange uses the
+existing two-station tones; set line advancement to `automatic` to run it in order.
+CW uses three ratings; voice omits tone. These clean synthesized examples teach
+report sounds and meanings—they do not simulate the reported signal's strength,
+noise or tone quality. Both references follow [ARRL's operating aids](https://www.arrl.org/quick-reference-operating-aids).
 
 ## Practice settings
 
@@ -306,5 +314,5 @@ acoustic stop tails still need listening acceptance. API cleanup timing cannot
 prove silence at the speaker.
 
 The [dependency map](.scratch/cw-practice/map.md) indexes the completed 00–10
-implementation, implemented Vail slices 13–15, and queued 11–12 follow-ups. See also the [UI design](docs/design/terminal-ui.md)
+implementation, NATO/RST slices 11–12, and Vail slices 13–15. See also the [UI design](docs/design/terminal-ui.md)
 and [architecture](docs/design/playback-architecture.md).

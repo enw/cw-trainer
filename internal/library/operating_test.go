@@ -31,7 +31,7 @@ func TestPhoneticEditsAndRemovalSurviveReload(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	index := len(data.Lists) - 1
+	index := 4
 	data.Lists[index].Entries[0].Lines[0].Spoken = "custom Alfa"
 	data.Lists[index].Settings.Display = "hidden"
 	data.Lists[index].Entries = data.Lists[index].Entries[:25]

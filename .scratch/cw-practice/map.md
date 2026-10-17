@@ -36,11 +36,11 @@ record](../../docs/design/complete-verification.md) for tests and PTY/device
 evidence. Human listening acceptance remains pending; software checks do not
 replace audible quality/tail validation.
 
-## Queued follow-ups
+## Follow-up slices
 
-The user requested these issues during implementation; they are not part of the
-current 02–10 build. Tickets 11/12 are independent of each other and reuse
-completed 09. The separate Vail input path starts with hardware verification.
+The user requested these issues during implementation and subsequently authorized
+all remaining slices. Tickets 11/12 are implemented, independent of each other,
+and reuse completed 09. The separate Vail input path starts with hardware verification.
 
 | Ticket | Delivers | Blocked by |
 | --- | --- | --- |

@@ -191,7 +191,8 @@ A; a adds an ordinary item or line; i explicitly imports starter copies at Lists
 ## Operating reference
 
 `o` opens a source-backed operating reference from browsing or practice. `j/k`
-or arrows scroll; `Esc/o` returns to the same selection. Practice keeps its
+or up/down arrows scroll; `h/l`, left/right arrows or Tab switches NATO/RST pages;
+`Esc/o` returns to the same selection. Practice keeps its
 state and Space can pause/resume audio. The reference is generic, never highlights
 the current hidden answer. Import with `i` while browsing asks confirmation and
 adds a fresh editable list with new identities; no existing material is replaced.

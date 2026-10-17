@@ -49,3 +49,35 @@ func TestOperatingReferenceScrollImportAndHiddenPractice(t *testing.T) {
 		t.Fatal("reference changed practice state")
 	}
 }
+
+func TestRSTReferenceRoutingImportAndHiddenPractice(t *testing.T) {
+	m := New(library.Fixture(), output.NewRunner(nil))
+	for _, key := range []rune{'o', 'l', 'i'} {
+		m.Update(tea.KeyPressMsg{Code: key, Text: string(key)})
+	}
+	if m.confirm == nil || !strings.Contains(m.confirm.prompt, "RST") {
+		t.Fatal("wrong import")
+	}
+	m.confirm.yes()
+	m.confirm = nil
+	if len(m.data.Lists) != 2 || m.data.Lists[1].Entries[0].Lines[0].CW != "599" {
+		t.Fatal("wrong list imported")
+	}
+	for i := 0; i < 40; i++ {
+		m.referenceKey("down")
+	}
+	if !strings.Contains(m.referenceView(), "Pure note without") {
+		t.Fatal("cannot reach tone nine")
+	}
+	m.referenceKey("esc")
+	m.list = 1
+	m.entry = 0
+	m.screen = practice
+	m.session.Select(1, 0)
+	m.session.Settings = m.data.Lists[1].Settings
+	m.session.Settings.Display = "hidden"
+	m.session.Phase = session.CW
+	if strings.Contains(m.View().Content, "599") || strings.Contains(m.View().Content, "Readability 5") {
+		t.Fatal("hidden RST answer leaked")
+	}
+}

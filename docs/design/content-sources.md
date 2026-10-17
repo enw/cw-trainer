@@ -28,3 +28,11 @@ Verified A–Z against [ARRL Quick Reference Operating Aids](https://www.arrl.or
 on 2026-10-17, including Alfa, Juliett and X-ray. The individual letter is the
 CW content; the spelling word is an explicit editable spoken override. Existing
 callsign speech is unchanged. The same mapping supplies the terminal reference.
+
+## RST reports and scales
+
+Verified rating order and ranges against the same ARRL operating aid on
+2026-10-17: readability 1–5, strength 1–9, tone 1–9; voice omits tone. Compact
+reference descriptions paraphrase the source. The shared scale data also supplies
+spoken report meanings. Numeric examples and the KE2ISH/W1AW exchange are invented
+practice material. Synthesized playback does not recreate the reported signal.

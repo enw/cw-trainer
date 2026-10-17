@@ -99,3 +99,17 @@ as accepted, a person should check:
 This is a listening/visual acceptance boundary, not deferred feature code.
 No platform other than this Mac setup or mid-session audio-device switching was
 validated.
+
+## NATO and RST follow-ups — 2026-10-17
+
+Tickets 11/12 passed the full Go suite, race suite and vet. Checks cover all 26
+phonetic words, RST ranges and report validation, hidden displays, retained edits
+and deletions, explicit selective imports, and existing-library preservation.
+The RST exchange compiles through the existing Morse path with learner/other
+station order. Both review axes have no remaining findings.
+
+A real PTY walkthrough with an isolated temporary library showed six first-use
+lists, both reference pages, scrolling through Tone 9, the RST-only import
+confirmation, cancellation back to the reference, and normal quit. No changes
+were made to the user's saved library. New-content speech pronunciation and
+listening quality have not been accepted by the user.
