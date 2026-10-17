@@ -80,10 +80,8 @@ func (l Library) Validate() error {
 		if !plain(list.Name, 100) {
 			return fmt.Errorf("invalid list name")
 		}
-		// Ticket 01 deliberately supports only the fixed preset. Refuse future modes
-		// rather than silently ignoring saved settings the app cannot yet honor.
-		if list.Settings != Defaults() {
-			return fmt.Errorf("this skeleton requires the fixed 20/15 WPM, 440/600 Hz preset")
+		if err := list.Settings.Validate(); err != nil {
+			return err
 		}
 		if len(list.Entries) > 100 {
 			return fmt.Errorf("too many entries")

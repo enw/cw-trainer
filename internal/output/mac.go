@@ -48,8 +48,8 @@ func (m *Mac) prepare(ctx context.Context) error {
 	}
 	return nil
 }
-func (m *Mac) CW(ctx context.Context, text string, hz float64) error {
-	timeline, err := morse.Compile(text, 20, 15, false)
+func (m *Mac) CW(ctx context.Context, text string, hz, character, overall float64) error {
+	timeline, err := morse.Compile(text, character, overall, false)
 	if err != nil {
 		return err
 	}

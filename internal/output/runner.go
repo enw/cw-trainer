@@ -11,7 +11,7 @@ import (
 )
 
 type Backend interface {
-	CW(context.Context, string, float64) error
+	CW(context.Context, string, float64, float64, float64) error
 	Speech(context.Context, string) error
 }
 type operation struct {
@@ -66,11 +66,15 @@ func (r *Runner) Execute(effect session.Effect, line library.Line) <-chan sessio
 		var err error
 		switch effect.Kind {
 		case session.PlayCW:
-			hz := 440.0
-			if line.Station == "other" {
-				hz = 600
+			config := effect.Settings
+			if config.CharacterWPM == 0 {
+				config = library.Defaults()
 			}
-			err = r.backend.CW(ctx, line.CW, hz)
+			hz := config.LearnerHz
+			if line.Station == "other" {
+				hz = config.OtherHz
+			}
+			err = r.backend.CW(ctx, line.CW, hz, config.CharacterWPM, config.OverallWPM)
 		case session.PlaySpeech:
 			err = r.backend.Speech(ctx, line.Spoken)
 		case session.Wait:

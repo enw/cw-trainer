@@ -71,6 +71,9 @@ func (m *Model) formKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 		m.form = nil
 		m.data = data
+		if m.screen == practice {
+			m.session.Settings = m.data.Lists[m.list].Settings
+		}
 		m.dirty = true
 		return m.persist()
 	}

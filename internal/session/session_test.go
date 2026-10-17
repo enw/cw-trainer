@@ -1,6 +1,7 @@
 package session_test
 
 import (
+	"cw-looper/internal/library"
 	"cw-looper/internal/session"
 	"errors"
 	"testing"
@@ -124,5 +125,23 @@ func TestLeavingAndSelectingExchangeKeepsGenerationsUnique(t *testing.T) {
 	}
 	if fx := s.Update(session.Input{Kind: session.Done, ID: old.ID}, now); len(fx) != 0 {
 		t.Fatal("late previous exchange event accepted")
+	}
+}
+
+func TestSettingsApplyAtNextRendering(t *testing.T) {
+	s := session.New(1)
+	now := time.Now()
+	first := s.Update(session.Input{Kind: session.Start}, now)[0]
+	config := library.Defaults()
+	config.CharacterWPM = 25
+	config.LearnerHz = 500
+	s.Settings = config
+	if first.Settings.CharacterWPM != 20 || s.ActiveSettings.LearnerHz != 440 {
+		t.Fatal("current rendering mutated")
+	}
+	gap := s.Update(session.Input{Kind: session.Done, ID: first.ID}, now)[0]
+	next := s.Update(session.Input{Kind: session.Done, ID: gap.ID}, now)[0]
+	if next.Settings.CharacterWPM != 25 || next.Settings.LearnerHz != 500 {
+		t.Fatal("pending settings not applied")
 	}
 }

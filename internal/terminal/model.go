@@ -87,6 +87,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.small() {
 			return m, nil
 		}
+		if key == "p" && m.screen != lists {
+			return m, m.settingsForm()
+		}
 		if key == "?" {
 			m.help = !m.help
 			return m, nil
@@ -230,5 +233,6 @@ func (m *Model) preparePractice() {
 		lengths[i] = len(e.Lines)
 	}
 	m.session.SelectEntries(lengths, m.entry, m.cursor)
+	m.session.Settings = m.data.Lists[m.list].Settings
 	m.screen = practice
 }

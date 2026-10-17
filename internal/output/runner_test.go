@@ -14,7 +14,7 @@ type controlledOutput struct {
 	release chan struct{}
 }
 
-func (f *controlledOutput) CW(ctx context.Context, text string, hz float64) error {
+func (f *controlledOutput) CW(ctx context.Context, text string, hz, character, overall float64) error {
 	return f.play(ctx, "cw")
 }
 func (f *controlledOutput) Speech(ctx context.Context, text string) error { return f.play(ctx, text) }

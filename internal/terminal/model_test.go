@@ -62,7 +62,7 @@ func TestPausedTopLevelNavigationStaysSilent(t *testing.T) {
 
 type silentBackend struct{}
 
-func (*silentBackend) CW(ctx context.Context, text string, hz float64) error {
+func (*silentBackend) CW(ctx context.Context, text string, hz, character, overall float64) error {
 	<-ctx.Done()
 	return ctx.Err()
 }

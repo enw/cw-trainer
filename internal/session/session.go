@@ -1,7 +1,10 @@
 // Package session owns playback policy. Only output effects cross into workers.
 package session
 
-import "time"
+import (
+	"cw-looper/internal/library"
+	"time"
+)
 
 type Phase string
 
@@ -48,30 +51,32 @@ const (
 )
 
 type Effect struct {
+	Settings library.Settings
 	Kind     EffectKind
 	ID       uint64
 	Duration time.Duration
 }
 
 type Session struct {
-	Phase               Phase
-	Line                int
-	Entry               int
-	entryLengths        []int
-	Count               int
-	Err                 error
-	lines               int
-	id                  uint64
-	pending             Phase
-	resume              Phase
-	gapRemaining        time.Duration
-	gapUntil            time.Time
-	speechReturnsPaused bool
-	quitting            bool
+	Settings, ActiveSettings library.Settings
+	Phase                    Phase
+	Line                     int
+	Entry                    int
+	entryLengths             []int
+	Count                    int
+	Err                      error
+	lines                    int
+	id                       uint64
+	pending                  Phase
+	resume                   Phase
+	gapRemaining             time.Duration
+	gapUntil                 time.Time
+	speechReturnsPaused      bool
+	quitting                 bool
 }
 
 func New(lines int) *Session {
-	return &Session{Phase: Idle, lines: lines, entryLengths: []int{lines}, resume: CW}
+	return &Session{Settings: library.Defaults(), ActiveSettings: library.Defaults(), Phase: Idle, lines: lines, entryLengths: []int{lines}, resume: CW}
 }
 
 // Update is serialized by the UI event loop; time is supplied for deterministic
@@ -155,6 +160,7 @@ func (s *Session) begin(target Phase, now time.Time) []Effect {
 	switch target {
 	case CW:
 		kind = PlayCW
+		s.ActiveSettings = s.Settings
 	case Speech:
 		kind = PlaySpeech
 	case Gap:
@@ -164,7 +170,7 @@ func (s *Session) begin(target Phase, now time.Time) []Effect {
 		return nil
 	}
 	s.id++
-	return []Effect{{Kind: kind, ID: s.id, Duration: s.gapRemaining}}
+	return []Effect{{Kind: kind, ID: s.id, Duration: s.gapRemaining, Settings: s.ActiveSettings}}
 }
 func (s *Session) outputEvent(in Input, now time.Time) []Effect {
 	if in.ID != s.id {
@@ -196,7 +202,7 @@ func (s *Session) outputEvent(in Input, now time.Time) []Effect {
 	case Gap:
 		return s.begin(CW, now)
 	}
-	s.gapRemaining = 2 * time.Second
+	s.gapRemaining = time.Duration(s.Settings.PauseSeconds * float64(time.Second))
 	return s.begin(Gap, now)
 }
 func (s *Session) pause(now time.Time) []Effect {

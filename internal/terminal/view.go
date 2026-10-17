@@ -72,9 +72,17 @@ func (m *Model) browseView() string {
 }
 func (m *Model) practiceView() string {
 	line := m.currentLines()[m.session.Line]
-	role, hz := station(line)
+	role, _ := station(line)
+	config := m.session.ActiveSettings
+	hz := config.LearnerHz
+	if line.Station == "other" {
+		hz = config.OtherHz
+	}
 	text := wrap(line.CW, min(m.width-6, 100))
 	status := string(m.session.Phase)
+	if m.session.Settings != config {
+		status += " · Settings pending next CW"
+	}
 	if m.session.Phase == session.Paused {
 		status += " · Space restarts the interrupted portion"
 	}
@@ -85,8 +93,8 @@ func (m *Model) practiceView() string {
 	if m.session.Line == len(m.currentLines())-1 {
 		boundary = "Last line · ] next item or Esc library\n"
 	}
-	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %d Hz\n\n%s\n\n%s · Completed: %d\n20 character / 15 overall WPM · Pause 2 s\nWhole line · CW only · Repeat current\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · Esc library · ? help · q quit",
-		clip(m.data.Lists[m.list].Entries[m.entry].Title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, boundary)
+	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %.0f Hz\n\n%s\n\n%s · Completed: %d\n%g character / %g overall WPM · Pause %g s\nWhole line · CW only · Repeat current\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · p settings · Esc library · ? help · q quit",
+		clip(m.data.Lists[m.list].Entries[m.entry].Title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, config.CharacterWPM, config.OverallWPM, m.session.Settings.PauseSeconds, boundary)
 }
 func station(line library.Line) (string, int) {
 	if line.Station == "other" {
