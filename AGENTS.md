@@ -44,7 +44,7 @@ Read the relevant `SKILL.md` when invoking a stage:
   report completion or stopped events. Preserve the cancellation barrier and IDs.
 - `docs/design/complete-verification.md` records current evidence and outstanding
   listening acceptance; the skeleton record is historical. Do not treat software cleanup timings as acoustic verification.
-- Tickets 00–10 are implemented. Follow-up tickets 11–12 are queued only; do not implement them without a request.
+- Tickets 00–10 are implemented. Follow-up tickets 11–15 are queued only; do not implement them without a request.
 
 ## Agent skills
 

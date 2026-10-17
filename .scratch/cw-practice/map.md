@@ -39,9 +39,17 @@ replace audible quality/tail validation.
 ## Queued follow-ups
 
 The user requested these issues during implementation; they are not part of the
-current 02–10 build. They are independent of each other and reuse completed 09.
+current 02–10 build. Tickets 11/12 are independent of each other and reuse
+completed 09. The separate Vail input path starts with hardware verification.
 
 | Ticket | Delivers | Blocked by |
 | --- | --- | --- |
 | [11](issues/11-nato-phonetic-alphabet.md) | NATO/ITU phonetic alphabet practice and reference | 09 |
 | [12](issues/12-rst-system.md) | RST report practice and rating-scale reference | 09 |
+| [13](issues/13-vail-midi-verification.md) | Prove USB MIDI input from the actual Vail touch pads | None |
+| [14](issues/14-listen-send-replay.md) | Hear a target, send it back, replay captured timing | 13, 10 |
+| [15](issues/15-sending-feedback.md) | Tentative decode and timing/spacing feedback | 14 |
+
+Vail sequence: **13 → 14 → 15**. The learner uses capacitive touch pads with
+Iambic B. USB MIDI support is documented upstream but unverified on their
+particular device; 14 cannot claim hardware readiness until 13 proves it.

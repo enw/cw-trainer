@@ -248,3 +248,17 @@ The user requested issues for NATO phonetic-alphabet and RST-system learning,
 using the ARRL Quick Reference Operating Aids. Tickets 11 and 12 in the canonical
 map capture these additions. They are queued for later scope review and
 implementation; the current implementation remains tickets 02–10.
+
+
+### Vail sending-practice follow-ups
+
+The user also requested follow-up tickets for their Vail adapter's capacitive
+touch pads, configured for Iambic B. The sequence is hardware/MIDI verification,
+then listen → send back → replay, followed by decoding and timing feedback.
+Capture would use USB MIDI mark events, not a microphone. Adapter sidetone and
+onboard keyer timing remain local. Upstream MIDI documentation is not proof
+that this user's firmware is emitting MIDI; verify the actual path first.
+
+Tickets 13–15 extend the original listening-only scope as queued work. The
+original out-of-scope keying exclusions still describe the shipped 00–10 app;
+no sending integration has been implemented or hardware reconfigured here.
