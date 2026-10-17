@@ -34,7 +34,7 @@ func (m *Model) sendingKey(key string) (tea.Cmd, bool) {
 	switch key {
 	case "enter":
 		if m.session.Phase == session.Capturing {
-			return m.dispatch(session.Input{Kind: session.FinishCapture}), true
+			return m.dispatch(session.Input{Kind: session.FinishCapture, At: midi.HostTime()}), true
 		}
 		if m.session.Phase == session.Ready || m.session.Phase == session.Captured {
 			if !m.midi.connected {
@@ -81,14 +81,17 @@ func (m *Model) sendingView() string {
 	if s.Attempt.Err != nil {
 		status += "\n" + s.Attempt.Err.Error()
 	}
+	if s.Phase == session.Capturing && s.FinishAt > 0 {
+		instruction = "Finishing: draining timestamped MIDI input…"
+	}
 	connection := m.midi.name
 	if !m.midi.connected {
 		connection = "Disconnected · Esc then m to reconnect"
 	}
 	return fmt.Sprintf("%s · Line %d of %d\nMIDI: %s\n\n%s\n\n%s\nCaptured marks: %d\n\n%s\nLive sidetone comes from the adapter. Replay preserves your timing.\n\nn retry reference · Space pause · R reveal · s speak\nh/l previous/next · [/] item · p settings\nEsc library · ? help · q quit", title, s.Line+1, len(m.currentLines()), clip(connection, 65), wrap(text, min(m.width-6, 100)), status, len(s.Attempt.Marks), instruction)
 }
-func (m *Model) midiEvent(event midi.Event) {
-	m.dispatch(session.Input{Kind: session.KeyEvent, Event: event})
+func (m *Model) midiEvent(event midi.Event) tea.Cmd {
+	return m.dispatch(session.Input{Kind: session.KeyEvent, Event: event})
 }
 func (m *Model) midiLost(err error) tea.Cmd {
 	m.notice = err.Error()

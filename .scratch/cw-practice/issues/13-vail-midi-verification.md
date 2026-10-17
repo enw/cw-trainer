@@ -21,8 +21,8 @@
 The learner owns a Vail adapter, uses its capacitive pads without external
 paddles, and has selected Iambic B. A cooperative standalone CoreMIDI probe verified this device's MIDI marks on
 2026-10-16. MIDI mode was temporarily enabled and keyboard output restored.
-No firmware, keyer, speed or tone changes were made; the app diagnostic remains
-unimplemented. See [observed evidence](../../../docs/design/vail-midi-verification.md).
+No firmware, keyer, speed or tone changes were made; the app diagnostic is implemented with integrated touch/reconnect acceptance
+pending. See [observed evidence](../../../docs/design/vail-midi-verification.md).
 
 [Upstream MIDI specification](https://github.com/Vail-CW/vail-adapter/blob/master/docs/MIDI_INTEGRATION_SPEC.md)
 currently documents keyboard mode at boot, explicit MIDI-mode selection using

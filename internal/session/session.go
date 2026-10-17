@@ -43,6 +43,7 @@ const (
 	Progress
 	BeginCapture
 	FinishCapture
+	CaptureDrained
 	ReplayAttempt
 	Reference
 	KeyEvent
@@ -78,6 +79,7 @@ type Effect struct {
 }
 
 type Session struct {
+	FinishAt time.Duration
 	SendBack bool
 	Attempt  keying.Attempt
 	// Shuffle permits deterministic rounds in session tests. Nil uses random order.
@@ -146,6 +148,7 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 	case Start:
 		if s.SendBack {
 			s.Attempt = keying.Attempt{}
+			s.FinishAt = 0
 		}
 		if s.lines == 0 {
 			return nil
@@ -339,6 +342,7 @@ func (s *Session) SelectEntries(lengths []int, entry, index int) {
 	}
 	s.SendBack = false
 	s.Attempt = keying.Attempt{}
+	s.FinishAt = 0
 	s.entryLengths = append([]int(nil), lengths...)
 	s.exchangeEntries = nil
 	s.resetRound()
@@ -363,6 +367,7 @@ func (s *Session) wantsPause() bool {
 func (s *Session) navigate(now time.Time) []Effect {
 	if s.SendBack {
 		s.Attempt = keying.Attempt{}
+		s.FinishAt = 0
 	}
 	s.Revealed = false
 	s.Sample = -1

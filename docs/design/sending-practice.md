@@ -25,7 +25,11 @@ host clock as capture arming; UI poll time is not the keying clock.
 From an ordinary entry or an exchange line, t starts send-back practice.
 Reference CW plays once, ignoring automatic sequence/reinforcement policies
 for this exercise. At Ready, Enter explicitly arms capture; Enter again finishes
-it. y replays the attempt, v replays reference, and n starts a fresh reference
+it. Finishing records a host-clock cutoff, allows 100 ms for queued MIDI delivery,
+then drains a fresh serialized poll before completing. Events after the cutoff
+are excluded. Exceptionally late events from before the cutoff invalidate the
+attempt and cancel replay; the settling interval is not a hard latency guarantee.
+y replays the attempt, v replays reference, and n starts a fresh reference
 and attempt. R reveal and h/l or arrows retain their existing meanings. Settings
 and key navigation must retain the session's generation/cancellation protection.
 

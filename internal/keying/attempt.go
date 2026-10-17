@@ -109,3 +109,7 @@ func (a *Attempt) Timeline() (morse.Timeline, error) {
 	}
 	return timeline, nil
 }
+
+func (a *Attempt) ContainsTime(at time.Duration) bool {
+	return at >= a.armed && (a.Active || a.complete || len(a.Marks) > 0)
+}

@@ -6,7 +6,7 @@ import "time"
 // cross the existing stop acknowledgment barrier before another output starts.
 func (s *Session) sendingInput(in Input, now time.Time) ([]Effect, bool) {
 	switch in.Kind {
-	case BeginCapture, FinishCapture, ReplayAttempt, Reference, KeyEvent, CaptureClock, InputLost:
+	case BeginCapture, FinishCapture, CaptureDrained, ReplayAttempt, Reference, KeyEvent, CaptureClock, InputLost:
 	default:
 		return nil, false
 	}
@@ -16,15 +16,32 @@ func (s *Session) sendingInput(in Input, now time.Time) ([]Effect, bool) {
 	switch in.Kind {
 	case BeginCapture:
 		if s.Phase == Ready || s.Phase == Captured {
+			s.FinishAt = 0
 			s.Attempt.Begin(in.At)
 			s.Phase = Capturing
 		}
 	case FinishCapture:
-		if s.Phase == Capturing {
+		if s.Phase == Capturing && s.FinishAt == 0 {
+			s.FinishAt = in.At
+		}
+	case CaptureDrained:
+		if s.Phase == Capturing && s.FinishAt > 0 && in.At == s.FinishAt {
 			_ = s.Attempt.Finish()
 			s.Phase = Captured
 		}
 	case KeyEvent:
+		if s.FinishAt > 0 {
+			if in.Event.At > s.FinishAt {
+				return nil, true
+			}
+			if s.Phase != Capturing && s.Attempt.ContainsTime(in.Event.At) {
+				s.Attempt.Invalidate("Late MIDI event after finish; retry capture")
+				if s.Phase == Captured || s.Phase == Replay {
+					return s.transition(Captured, now), true
+				}
+				return nil, true
+			}
+		}
 		if s.Phase == Capturing {
 			s.Attempt.Feed(in.Event)
 			if s.Attempt.Err != nil {
@@ -33,7 +50,11 @@ func (s *Session) sendingInput(in Input, now time.Time) ([]Effect, bool) {
 		}
 	case CaptureClock:
 		if s.Phase == Capturing {
-			s.Attempt.Check(in.At)
+			at := in.At
+			if s.FinishAt > 0 {
+				at = min(at, s.FinishAt)
+			}
+			s.Attempt.Check(at)
 			if s.Attempt.Err != nil {
 				s.Phase = Captured
 			}
@@ -51,6 +72,9 @@ func (s *Session) sendingInput(in Input, now time.Time) ([]Effect, bool) {
 		return s.transition(CW, now), true
 	case InputLost:
 		s.Attempt.Invalidate("MIDI connection lost; reconnect and start a fresh attempt")
+		if s.Phase == Idle || s.Phase == Stopping && s.pending == Idle {
+			return nil, true
+		}
 		return s.transition(Captured, now), true
 	}
 	return nil, true

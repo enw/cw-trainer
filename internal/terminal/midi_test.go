@@ -4,6 +4,7 @@ import (
 	"cw-looper/internal/library"
 	"cw-looper/internal/midi"
 	"cw-looper/internal/output"
+	"cw-looper/internal/session"
 	"errors"
 	"testing"
 	"time"
@@ -25,5 +26,26 @@ func TestMIDIDiagnosticRejectsOldEventsAndClearsDisconnect(t *testing.T) {
 	m.midiMessage(midiPollMsg{generation: 2, err: errors.New("unplugged")})
 	if m.midi.connected || len(m.midi.down) != 0 {
 		t.Fatal("held note survived disconnect")
+	}
+}
+
+func TestLateMIDIAfterFinishDeliversReplayStopAcknowledgment(t *testing.T) {
+	m := New(library.Fixture(), output.NewRunner(nil))
+	m.session.SendBack = true
+	m.session.Phase = session.Ready
+	now := time.Now()
+	for _, input := range []session.Input{
+		{Kind: session.BeginCapture, At: time.Second},
+		{Kind: session.KeyEvent, Event: midi.Event{At: time.Second, Down: true}},
+		{Kind: session.KeyEvent, Event: midi.Event{At: 1080 * time.Millisecond}},
+		{Kind: session.FinishCapture, At: 2 * time.Second},
+		{Kind: session.CaptureDrained, At: 2 * time.Second},
+		{Kind: session.ReplayAttempt},
+	} {
+		m.session.Update(input, now)
+	}
+	cmd := m.midiEvent(midi.Event{At: 1500 * time.Millisecond, Down: true})
+	if cmd == nil || m.session.Phase != session.Stopping {
+		t.Fatal("late input did not deliver replay cancellation command")
 	}
 }

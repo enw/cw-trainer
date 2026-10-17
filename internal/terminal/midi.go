@@ -29,6 +29,7 @@ type midiConnectedMsg struct {
 	err  error
 }
 type midiPollMsg struct {
+	finishAt   time.Duration
 	generation uint64
 	events     []midi.Event
 	err        error
@@ -74,7 +75,14 @@ func (m *Model) midiMessage(msg tea.Msg) tea.Cmd {
 		if !state.connected || msg.generation != state.generation {
 			return nil
 		}
-		return func() tea.Msg { events, err := state.manager.Poll(); return midiPollMsg{msg.generation, events, err} }
+		finishAt := m.session.FinishAt
+		if midi.HostTime() < finishAt+100*time.Millisecond {
+			finishAt = 0
+		}
+		return func() tea.Msg {
+			events, err := state.manager.Poll()
+			return midiPollMsg{generation: msg.generation, events: events, err: err, finishAt: finishAt}
+		}
 	case midiPollMsg:
 		if !state.connected || msg.generation != state.generation {
 			return nil
@@ -86,6 +94,7 @@ func (m *Model) midiMessage(msg tea.Msg) tea.Cmd {
 			state.status = msg.err.Error()
 			return m.midiLost(msg.err)
 		}
+		commands := []tea.Cmd{}
 		for _, event := range msg.events {
 			state.received++
 			label := "up"
@@ -101,13 +110,16 @@ func (m *Model) midiMessage(msg tea.Msg) tea.Cmd {
 			if len(state.recent) > 8 {
 				state.recent = state.recent[len(state.recent)-8:]
 			}
-			m.midiEvent(event)
+			commands = append(commands, m.midiEvent(event))
 		}
 		if state.received > 0 {
 			state.status = fmt.Sprintf("Receiving · %d events · %d held notes", state.received, len(state.down))
 		}
-		m.dispatch(session.Input{Kind: session.CaptureClock, At: midi.HostTime()})
-		return midiTick(state.generation)
+		if msg.finishAt > 0 {
+			commands = append(commands, m.dispatch(session.Input{Kind: session.CaptureDrained, At: msg.finishAt}))
+		}
+		commands = append(commands, m.dispatch(session.Input{Kind: session.CaptureClock, At: midi.HostTime()}), midiTick(state.generation))
+		return tea.Batch(commands...)
 	}
 	return nil
 }
