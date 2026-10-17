@@ -63,6 +63,7 @@ sending speed, uncertainty, prosigns and hidden-target comparison. The app has
 enumerated and connected to QT Py M0 and played a reference. On 2026-10-17, the user reported running the README A capture/decode/replay
 walkthrough with no problems. This accepts the basic live send-back path, including
 replay listening and A feedback. No new timing measurements were collected.
-Unplug/reconnect and broader live feedback cases (word spacing, prosigns,
+The user also confirmed recovery after unplug/reconnect by explicitly reselecting
+QT Py M0 on 2026-10-17. Broader live feedback cases (word spacing, prosigns,
 uncertain or mismatched attempts) remain unconfirmed. The temporary standalone Swift probes were used
 from `/tmp`; they are not installed features or repository source.

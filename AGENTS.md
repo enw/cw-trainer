@@ -44,7 +44,7 @@ Read the relevant `SKILL.md` when invoking a stage:
   report completion or stopped events. Preserve the cancellation barrier and IDs.
 - `docs/design/complete-verification.md` records current evidence and outstanding
   listening acceptance; the skeleton record is historical. Do not treat software cleanup timings as acoustic verification.
-- Tickets 00–10 are implemented. Tickets 13–15 implement Vail MIDI, send-back practice and tentative feedback; the live A capture/decode/replay walkthrough passed on 2026-10-17. Unplug/reconnect and broader live feedback acceptance remain open. Tickets 11 and 12 remain queued.
+- Tickets 00–10 are implemented. Tickets 13–15 implement Vail MIDI, send-back practice and tentative feedback; the live A capture/decode/replay walkthrough passed on 2026-10-17. Unplug/reconnect passed after reselecting QT Py M0; broader live feedback acceptance remains open. Tickets 11 and 12 remain queued.
 
 ## Agent skills
 

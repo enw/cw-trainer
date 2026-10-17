@@ -4,7 +4,7 @@
 
 **Blocked by:** None — independent hardware integration check; does not depend on 11/12.
 
-**Status:** implemented — native MIDI boundary and terminal diagnostic; integrated hardware retest in progress
+**Status:** implemented — native MIDI boundary and terminal diagnostic; live capture and explicit reconnect accepted on 2026-10-17
 
 - [x] Identify the actual adapter board/firmware where possible and enumerate Mac MIDI endpoints. Distinguish an enumerated endpoint from verified keying events.
 - [x] Provide a terminal diagnostic that selects the adapter, shows connection state and event timestamps, and offers a deliberate MIDI-mode connection action.
@@ -22,7 +22,7 @@ The learner owns a Vail adapter, uses its capacitive pads without external
 paddles, and has selected Iambic B. A cooperative standalone CoreMIDI probe verified this device's MIDI marks on
 2026-10-16. MIDI mode was temporarily enabled and keyboard output restored.
 No firmware, keyer, speed or tone changes were made; the app diagnostic is implemented with integrated touch/reconnect acceptance
-pending. See [observed evidence](../../../docs/design/vail-midi-verification.md).
+confirmed by the user on 2026-10-17. See [observed evidence](../../../docs/design/vail-midi-verification.md).
 
 [Upstream MIDI specification](https://github.com/Vail-CW/vail-adapter/blob/master/docs/MIDI_INTEGRATION_SPEC.md)
 currently documents keyboard mode at boot, explicit MIDI-mode selection using
@@ -34,5 +34,5 @@ firmware and independent keyer-mode identification remain unverified.
 
 Native CoreMIDI boundary, recorded-packet decoding tests, disconnect/close tests,
 and terminal stale-generation tests pass. The app enumerates and connects to
-QT Py M0. Cooperative in-app touch/unplug/reconnect confirmation is pending;
+QT Py M0. The user confirmed live A capture/replay and recovery after reselecting QT Py M0 on 2026-10-17;
 the earlier standalone hardware event capture is already verified.

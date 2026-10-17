@@ -32,8 +32,8 @@ LISTEN  ──→  READY  ──→  SEND  ──→  REPLAY + FEEDBACK
 
 > **Status:** Listening practice, Vail capture/replay, and tentative feedback are
 > implemented. Automated checks pass; the live `A` capture/decode/replay walkthrough
-> passed on 2026-10-17. Unplug/reconnect and broader live feedback checks remain
-> open. Badges describe the stack, not CI status.
+> passed on 2026-10-17, as did reconnecting by reselecting QT Py M0. Broader live
+> feedback checks remain open. Badges describe the stack, not CI status.
 
 ## Get started
 
@@ -240,7 +240,8 @@ prosign aliases such as `<AR>/+` share one continuous pattern. There is no accur
 score. The adapter generates element lengths; your spacing is the useful manual
 signal. Tolerances are documented in [sending design](docs/design/sending-practice.md).
 The live `A` capture/decode/replay walkthrough passed on 2026-10-17.
-Unplug/reconnect and broader live feedback acceptance remain open.
+Unplug/reconnect also passed after reselecting QT Py M0. Broader live feedback
+acceptance remains open.
 
 ## Saved material and recovery
 

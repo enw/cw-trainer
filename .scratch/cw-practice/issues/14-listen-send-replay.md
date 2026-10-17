@@ -4,7 +4,7 @@
 
 **Blocked by:** 13 — Verified Vail MIDI input; 10 — Existing integrated practice app (implemented).
 
-**Status:** implemented — automated capture/session/replay checks passed; user passed the live A capture/decode/replay walkthrough on 2026-10-17; unplug/reconnect acceptance remains open
+**Status:** implemented — automated capture/session/replay checks passed; user passed the live A capture/decode/replay walkthrough on 2026-10-17; unplug/reconnect also passed after explicitly reselecting QT Py M0
 
 - [x] Add an explicit listen/send-back practice mode using existing saved items and exchange lines, without altering the default listening-only workflow.
 - [x] Follow reference playback → ready to send → capture → finish → replay/reference/retry. Provide explicit keyboard controls to begin/end an attempt, retry, navigate and leave; do not guess completion solely from a pause in sending.
