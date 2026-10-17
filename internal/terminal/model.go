@@ -44,6 +44,13 @@ func New(data library.Library, runner *output.Runner, save ...func(library.Libra
 func (m *Model) Init() tea.Cmd { return nil }
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case progressMsg:
+		if msg.id != m.session.CurrentID() || m.session.Phase != session.CW {
+			return m, nil
+		}
+		id, sample := m.runner.Progress()
+		m.session.Update(session.Input{Kind: session.Progress, ID: id, Sample: sample}, time.Now())
+		return m, progressTick(msg.id)
 	case savedMsg:
 		m.saving = false
 		if msg.err != nil {
@@ -133,6 +140,9 @@ func (m *Model) dispatch(in session.Input) tea.Cmd {
 			line = m.currentLines()[m.session.Line]
 		}
 		events := m.runner.Execute(effect, line)
+		if effect.Kind == session.PlayCW {
+			cmds = append(cmds, progressTick(effect.ID))
+		}
 		cmds = append(cmds, func() tea.Msg { return <-events })
 	}
 	if m.session.Phase == session.Idle && m.screen == practice && !exiting {
@@ -150,6 +160,8 @@ func (m *Model) practiceKey(key string) tea.Cmd {
 	switch key {
 	case "space":
 		action.Kind = session.TogglePause
+	case "r", "R":
+		action.Kind = session.Reveal
 	case "s", "S":
 		action.Kind = session.Speak
 	case "left", "h":
@@ -228,6 +240,7 @@ func (m *Model) count() int {
 }
 
 func (m *Model) preparePractice() {
+	m.notice = ""
 	lengths := make([]int, len(m.data.Lists[m.list].Entries))
 	for i, e := range m.data.Lists[m.list].Entries {
 		lengths[i] = len(e.Lines)
@@ -235,4 +248,10 @@ func (m *Model) preparePractice() {
 	m.session.SelectEntries(lengths, m.entry, m.cursor)
 	m.session.Settings = m.data.Lists[m.list].Settings
 	m.screen = practice
+}
+
+type progressMsg struct{ id uint64 }
+
+func progressTick(id uint64) tea.Cmd {
+	return tea.Tick(25*time.Millisecond, func(time.Time) tea.Msg { return progressMsg{id} })
 }

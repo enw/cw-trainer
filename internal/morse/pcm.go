@@ -6,14 +6,16 @@ import (
 	"io"
 	"math"
 	"sort"
+	"sync/atomic"
 )
 
 // PCM streams the bounded timeline without allocating audio for the entire line.
 // Reads and seeks are serialized by the audio player.
 type PCM struct {
-	timeline Timeline
-	hz       float64
-	position int64
+	timeline  Timeline
+	hz        float64
+	position  int64
+	published atomic.Int64
 }
 
 func NewPCM(timeline Timeline, hz float64) (*PCM, error) {
@@ -45,6 +47,7 @@ func (p *PCM) Read(b []byte) (int, error) {
 		i += copied
 		p.position += int64(copied)
 	}
+	p.published.Store(p.position)
 	return n, nil
 }
 func (p *PCM) Seek(offset int64, whence int) (int64, error) {
@@ -61,5 +64,9 @@ func (p *PCM) Seek(offset int64, whence int) (int64, error) {
 		return p.position, fmt.Errorf("seek outside PCM")
 	}
 	p.position = offset
+	p.published.Store(offset)
 	return offset, nil
 }
+
+// ReadSamples is safe to observe while the audio player reads PCM.
+func (p *PCM) ReadSamples() int64 { return p.published.Load() / 4 }

@@ -33,12 +33,15 @@ const (
 	Done
 	Stopped
 	Error
+	Reveal
+	Progress
 )
 
 type Input struct {
-	Kind Kind
-	ID   uint64
-	Err  error
+	Kind   Kind
+	ID     uint64
+	Sample int64
+	Err    error
 }
 type EffectKind int
 
@@ -58,6 +61,8 @@ type Effect struct {
 }
 
 type Session struct {
+	Revealed                 bool
+	Sample                   int64
 	Settings, ActiveSettings library.Settings
 	Phase                    Phase
 	Line                     int
@@ -86,6 +91,12 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 		return nil
 	}
 	switch in.Kind {
+	case Reveal:
+		s.Revealed = !s.Revealed
+	case Progress:
+		if in.ID == s.id && s.Phase == CW {
+			s.Sample = in.Sample
+		}
 	case Done, Stopped, Error:
 		return s.outputEvent(in, now)
 	case Quit:
@@ -159,6 +170,7 @@ func (s *Session) begin(target Phase, now time.Time) []Effect {
 	var kind EffectKind
 	switch target {
 	case CW:
+		s.Sample = -1
 		kind = PlayCW
 		s.ActiveSettings = s.Settings
 	case Speech:
@@ -247,6 +259,8 @@ func (s *Session) SelectEntries(lengths []int, entry, index int) {
 	s.Count = 0
 	s.Err = nil
 	s.Phase = Idle
+	s.Revealed = false
+	s.Sample = -1
 	s.resume = CW
 	s.speechReturnsPaused = false
 }
@@ -254,6 +268,8 @@ func (s *Session) wantsPause() bool {
 	return s.Phase == Paused || (s.Phase == Stopping && s.pending == Paused) || s.speechReturnsPaused
 }
 func (s *Session) navigate(now time.Time) []Effect {
+	s.Revealed = false
+	s.Sample = -1
 	paused := s.wantsPause()
 	s.Count = 0
 	s.resume = CW
@@ -266,3 +282,5 @@ func (s *Session) navigate(now time.Time) []Effect {
 	}
 	return s.transition(CW, now)
 }
+
+func (s *Session) CurrentID() uint64 { return s.id }

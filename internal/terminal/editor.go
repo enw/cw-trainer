@@ -98,7 +98,9 @@ func (m *Model) formView() string {
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s\n\n", f.title)
-	for i, label := range f.labels {
+	start := max(0, f.focus-3)
+	for i := start; i < min(len(f.labels), start+5); i++ {
+		label := f.labels[i]
 		fmt.Fprintf(&b, "%s\n%s\n\n", label, f.fields[i].View())
 	}
 	b.WriteString("Tab next field · Ctrl+P prosigns · Ctrl+S save · Esc cancel")

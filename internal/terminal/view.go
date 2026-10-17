@@ -3,6 +3,7 @@ package terminal
 import (
 	tea "charm.land/bubbletea/v2"
 	"cw-looper/internal/library"
+	"cw-looper/internal/morse"
 	"cw-looper/internal/session"
 	"fmt"
 	"strings"
@@ -79,6 +80,21 @@ func (m *Model) practiceView() string {
 		hz = config.OtherHz
 	}
 	text := wrap(line.CW, min(m.width-6, 100))
+	title := m.data.Lists[m.list].Entries[m.entry].Title
+	if m.session.Settings.Display == "hidden" && !m.session.Revealed {
+		text = "Answer hidden · R reveal"
+		title = "Listening practice"
+	} else if m.session.Settings.Display == "highlight" && m.session.Phase == session.CW {
+		timeline, err := morse.Compile(line.CW, config.CharacterWPM, config.OverallWPM, false)
+		if err == nil {
+			for _, marker := range timeline.Markers {
+				if m.session.Sample >= marker.Start && m.session.Sample < marker.End {
+					text = wrap(timeline.Text[:marker.From]+"["+timeline.Text[marker.From:marker.To]+"]"+timeline.Text[marker.To:], min(m.width-6, 100))
+					break
+				}
+			}
+		}
+	}
 	status := string(m.session.Phase)
 	if m.session.Settings != config {
 		status += " · Settings pending next CW"
@@ -86,15 +102,17 @@ func (m *Model) practiceView() string {
 	if m.session.Phase == session.Paused {
 		status += " · Space restarts the interrupted portion"
 	}
-	if m.session.Phase == session.Failed {
+	if m.session.Phase == session.Failed && m.session.Settings.Display == "hidden" && !m.session.Revealed {
+		status = "Playback failed · Enter retries; Esc for details in library"
+	} else if m.session.Phase == session.Failed {
 		status = wrap(m.session.Err.Error(), m.width-6) + "\nEnter retries · restart app if indicated"
 	}
 	boundary := ""
 	if m.session.Line == len(m.currentLines())-1 {
 		boundary = "Last line · ] next item or Esc library\n"
 	}
-	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %.0f Hz\n\n%s\n\n%s · Completed: %d\n%g character / %g overall WPM · Pause %g s\nWhole line · CW only · Repeat current\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · p settings · Esc library · ? help · q quit",
-		clip(m.data.Lists[m.list].Entries[m.entry].Title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, config.CharacterWPM, config.OverallWPM, m.session.Settings.PauseSeconds, boundary)
+	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %.0f Hz\n\n%s\n\n%s · Completed: %d\n%g character / %g overall WPM · Pause %g s\n%s · CW only · Repeat current\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · R reveal · p settings · Esc library · ? help · q quit",
+		clip(title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, config.CharacterWPM, config.OverallWPM, m.session.Settings.PauseSeconds, m.session.Settings.Display, boundary)
 }
 func station(line library.Line) (string, int) {
 	if line.Station == "other" {

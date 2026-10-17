@@ -14,15 +14,20 @@ type Backend interface {
 	CW(context.Context, string, float64, float64, float64) error
 	Speech(context.Context, string) error
 }
+type progressBackend interface {
+	CWProgress(context.Context, string, float64, float64, float64, func(int64)) error
+}
 type operation struct {
 	id     uint64
 	cancel context.CancelFunc
 	done   chan struct{}
 }
 type Runner struct {
-	backend Backend
-	mu      sync.Mutex
-	active  *operation
+	backend    Backend
+	mu         sync.Mutex
+	active     *operation
+	progressID uint64
+	sample     int64
 }
 
 func NewRunner(backend Backend) *Runner { return &Runner{backend: backend} }
@@ -61,6 +66,7 @@ func (r *Runner) Execute(effect session.Effect, line library.Line) <-chan sessio
 	ctx, cancel := context.WithCancel(context.Background())
 	op := &operation{effect.ID, cancel, make(chan struct{})}
 	r.active = op
+	r.progressID, r.sample = effect.ID, -1
 	go func() {
 		defer cancel()
 		var err error
@@ -74,7 +80,17 @@ func (r *Runner) Execute(effect session.Effect, line library.Line) <-chan sessio
 			if line.Station == "other" {
 				hz = config.OtherHz
 			}
-			err = r.backend.CW(ctx, line.CW, hz, config.CharacterWPM, config.OverallWPM)
+			if backend, ok := r.backend.(progressBackend); ok {
+				err = backend.CWProgress(ctx, line.CW, hz, config.CharacterWPM, config.OverallWPM, func(sample int64) {
+					r.mu.Lock()
+					defer r.mu.Unlock()
+					if r.progressID == effect.ID {
+						r.sample = sample
+					}
+				})
+			} else {
+				err = r.backend.CW(ctx, line.CW, hz, config.CharacterWPM, config.OverallWPM)
+			}
 		case session.PlaySpeech:
 			err = r.backend.Speech(ctx, line.Spoken)
 		case session.Wait:
@@ -109,4 +125,10 @@ func (r *Runner) Close() {
 	if op != nil {
 		<-op.done
 	}
+}
+
+func (r *Runner) Progress() (uint64, int64) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.progressID, r.sample
 }
