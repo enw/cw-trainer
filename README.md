@@ -1,27 +1,137 @@
+<div align="center">
+
 # cw-looper
 
-A macOS terminal app for recognizing familiar CW sounds: your callsign,
-common terms, continuous prosigns, and two-station exchanges. Start with
-**KE2ISH**, repeat one item until ready, and optionally reinforce it with speech.
+### Hear the shape. Send it back.
 
-## Run
+**A little terminal practice. A lot of dits and dahs.**
+
+![Platform: macOS](https://img.shields.io/badge/platform-macOS-111827?style=for-the-badge&logo=apple&logoColor=white)
+![Go 1.26+](https://img.shields.io/badge/Go-1.26%2B-00ADD8?style=for-the-badge&logo=go&logoColor=white)
+![Input: USB MIDI](https://img.shields.io/badge/input-USB_MIDI-8B5CF6?style=for-the-badge)
+![Controls: vi keys](https://img.shields.io/badge/controls-vi_keys-22C55E?style=for-the-badge)
+
+[Get started](#get-started) · [Test your Vail adapter](#test-your-vail-adapter) · [Controls](#controls-and-editing) · [Settings](#practice-settings) · [Development](#development-and-verification)
+
+</div>
+
+Learn to recognize **whole CW sounds**: your callsign, familiar words, continuous
+prosigns, and full exchanges. Start with **KE2ISH**, stay on one item until it
+feels familiar, then move on at your own pace.
+
+| Listen | Send | Understand |
+| :--- | :--- | :--- |
+| Repeat familiar sounds with Farnsworth timing | Send back on Vail capacitive pads | Replay your actual timing |
+| CW → speech → CW, or occasional spoken reminders | Keep Iambic B and the adapter's local sidetone | Inspect tentative decoding and spacing |
+| Two-station exchanges with distinct tones | Practice one exchange line at a time | Reveal hidden answers when ready |
+
+```text
+LISTEN  ──→  READY  ──→  SEND  ──→  REPLAY + FEEDBACK
+             Enter      Enter       y / f
+```
+
+> **Status:** Listening practice, Vail capture/replay, and tentative feedback are
+> implemented. Automated checks pass; the integrated hardware listening walkthrough
+> below still needs human acceptance. Badges describe the stack, not CI status.
+
+## Get started
 
 Requires Go 1.26+, macOS, Xcode Command Line Tools (for the native MIDI bridge),
 `/usr/bin/say`, and a configured audio output.
 Tested on macOS 26.6.2, Apple silicon. Use a terminal at least 80 × 24.
 
+From the repository folder:
+
 ```sh
-go run ./cmd/cw-looper
-# Or build and run:
 go build -o bin/cw-looper ./cmd/cw-looper
 ./bin/cw-looper
 ```
+
+For a quick run without a separate build step: `go run ./cmd/cw-looper`.
 
 First launch installs four editable lists: callsign, common terms, prosigns,
 and exchanges. Enter opens a list; Enter on an ordinary item starts practice.
 For an exchange, open it and then start a selected line. Browsing is silent.
 An eight-line example contact is included. Names, reports and locations are
 practice examples, not a real contact; [content sources](docs/design/content-sources.md).
+
+## Test your Vail adapter
+
+**Start with a single `A` — dit-dah — so the result is easy to check.** Allow about
+five minutes. Use the freshly built binary above; quit any older running copy first.
+
+### 1. Prove the connection
+
+1. Plug in the Vail adapter. Leave it in your usual **Iambic B** configuration.
+2. While browsing, press **m**, select **QT Py M0** (or your adapter's name),
+   then **Enter** to enable MIDI output.
+3. Tap each pad. The diagnostic should show **down/up events**, an increasing
+   event count, and **zero held notes after release**. At the previously observed
+   15 WPM, dits should be about **80 ms**, dahs about **240 ms**.
+4. Press **Esc** to return to the library with MIDI connected.
+
+Hearing the adapter's buzzer alone is not this test: the event display confirms
+that the Mac receives your keying.
+
+### 2. Make a tiny practice target
+
+1. Open any list with **Enter**. Press lowercase **a** to add an ordinary item.
+2. In **CW text**, type `A`. Leave the spoken override empty and press **Ctrl+S**.
+3. Select the new `A` item with **j/k** or arrows, then press **t** for send-back.
+   Wait for the reference to finish and the screen to say **Ready to send**.
+
+If you only see **First Exchange**, press **i** on the top-level Lists screen to
+import the starter library. Existing saved material is preserved.
+
+### 3. Send, finish, listen
+
+1. Release both pads, then press **Enter** to arm capture.
+2. Send **dit-dah** as one character. Keep the gap between elements short;
+   at 15 WPM it is roughly 80 ms. Release the pads.
+3. Press **Enter** to finish. Expect **2 captured marks** and a tentative decode
+   of **A**. With the answer visible, expect **Matching Morse patterns and word
+   boundaries**.
+4. Press **y**. The computer should replay your dit-dah with the timing you sent.
+5. After the attempt or its replay, press **f** for full feedback. **j/k** scrolls;
+   **Esc** returns. **- / +** adjusts the interpretation's sending WPM. Match it
+   to the adapter; this control does not change the adapter or reference speed.
+6. Back on the practice screen, press **v** to hear the reference again. It may
+   differ from your replay: reference Farnsworth speed and adapter sending speed
+   are independent. **Enter** at Ready starts a new attempt.
+
+> **What counts as a pass?** Events reach the Mac, the attempt contains both
+> marks, the decode is `A` at the correct sending speed, and replay sounds like
+> your sending. An uncertain decode is useful evidence too: note the sending WPM
+> and gap values rather than adjusting them just to force a match.
+
+### 4. Try the edge cases
+
+| Try this | Expected result |
+| :--- | :--- |
+| Capture `T` against the `A` target | Decode `T`; different Morse patterns |
+| Start and finish without touching a pad | No input; no replayable attempt |
+| Set display to `hidden` with **p**, then capture | Your sending is shown; target/comparison waits for **R** |
+| Unplug during capture | Connection lost; attempt invalidated |
+| Reconnect, **Esc** to browsing, **m**, **f**, select device, **Enter** | Fresh connection; start a new attempt |
+| Quit normally with **q** | App closes its MIDI ports and requests keyboard-output mode |
+
+**Tell me what you see:** adapter name, captured mark count, decoded text,
+sending WPM, whether replay sounds right, and any disconnect/reconnect problem.
+That completes the human check that automated tests cannot provide.
+
+<details>
+<summary><strong>Something didn't work?</strong></summary>
+
+| Symptom | Check |
+| :--- | :--- |
+| No MIDI device listed | Check USB connection; press **f** in the diagnostic to refresh |
+| Sidetone, but no events | Select the adapter and press **Enter** to enable MIDI; confirm event count increases |
+| “Release both pads” | Release all touches; check held-note count in the diagnostic |
+| `[gap?]` or an uncertain symbol | Match sending WPM to adapter speed; inspect gaps with **f**, then replay |
+| Decode differs from what you intended | Listen to **y** first; the decoder never fills in the expected answer |
+| No computer audio | Check macOS output/volume and restart the app; adapter sidetone is separate |
+
+</details>
 
 ## Controls and editing
 
@@ -163,7 +273,7 @@ stops instead of looping. Speech text goes directly to macOS `say` on stdin;
 no shell evaluates it. Audio/speech need no network service. Switching audio
 devices mid-session is not verified; restart afterward.
 
-## Verification and remaining acceptance
+## Development and verification
 
 ```sh
 go test ./...
@@ -180,5 +290,5 @@ acoustic stop tails still need listening acceptance. API cleanup timing cannot
 prove silence at the speaker.
 
 The [dependency map](.scratch/cw-practice/map.md) indexes the completed 00–10
-implementation and queued 11–12 follow-ups. See also the [UI design](docs/design/terminal-ui.md)
+implementation, implemented Vail slices 13–15, and queued 11–12 follow-ups. See also the [UI design](docs/design/terminal-ui.md)
 and [architecture](docs/design/playback-architecture.md).
