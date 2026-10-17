@@ -20,3 +20,11 @@
 ## Boundary
 
 This is a narrow end-to-end implementation, not disposable scaffolding. Fixed settings, explicit spoken phrases, one exchange, and whole-line display are sufficient. Full editors, reinforcement patterns, runtime tuning, prosigns, and alternate display modes belong to later tickets.
+
+## Design reference
+
+Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
+[playback architecture](../../../docs/design/playback-architecture.md).
+Design is authored but awaits user review and skeleton validation; this ticket
+has not started.
+The [skeleton fixture and acceptance script](../../../docs/design/skeleton-acceptance.md) define the narrow demo and real Mac checks.

@@ -24,7 +24,7 @@ Keep three choices independent:
 
 | Setting | Choices | Initial behavior |
 | --- | --- | --- |
-| Playback style | CW only; CW → speech → CW; CW with occasional speech | CW only, proposed initial selection |
+| Playback style | CW only; CW → speech → CW; CW with occasional speech | CW only (ticket 00 design) |
 | Text display | Whole item visible; current letter highlighted; hidden until revealed | Whole item visible |
 | Sequence | Repeat current item; cycle; shuffle | Repeat current item until Next |
 
@@ -162,7 +162,7 @@ to repeating the current line.
 
 - Space pauses/resumes; left/right select previous/next item or exchange line;
   R reveals; S speaks now. Support vi navigation alongside arrows.
-- Proposed concrete mapping: h/l mirror left/right and j/k mirror down/up in
+- Ticket 00 design mapping: h/l mirror left/right and j/k mirror down/up in
   list navigation. Navigation shortcuts must not consume text while editing.
 - Provide discoverable controls for list/item editing and practice settings,
   and show current playback, display, sequence, and timing selections.
@@ -231,23 +231,10 @@ spec. Ticket creation and implementation remain separate, user-requested stages.
 The ready-for-agent status identifies a usable spec; it does not authorize
 skipping that workflow.
 
-The following edge behaviors are proposed defaults rather than individually
-confirmed requirements. Review them when breaking the spec into tickets:
-
-- Start a new list in CW-only mode with whole-item text visible.
-- Hidden text stays revealed through repetitions of the same item and hides
-  again when the current item or exchange line changes.
-- Reset the occasional-speech count when selecting a different item/line or
-  changing playback style. Count only completed CW repetitions.
-- With cycle/shuffle plus occasional speech, complete the configured repetitions
-  and spoken reinforcement for the current item before advancing; do not count
-  unrelated items toward the speech interval.
-- Shuffle visits every top-level item/exchange once per round. Preserve lines
-  within an exchange in order. Cycle wraps at the end; both stop on pause/exit.
-- Navigating during output cancels it and starts the newly selected item.
-  Speak-now temporarily interrupts practice, speaks the current phrase, then
-  restarts that item's CW from its beginning after the configured pause.
-- If the native speech backend cannot resume mid-utterance, resume a paused
-  spoken portion from its beginning. Make the behavior consistent and visible.
-- Use a single pause setting initially; separate pauses for different portions
-  can be considered later.
+The edge behaviors discussed during specification are resolved in the
+[ticket 00 UI design](../../docs/design/terminal-ui.md) and
+[playback architecture](../../docs/design/playback-architecture.md).
+Those documents are the single source for navigation, pause/resume, speech
+counts, shuffle, reveal lifetime, and playback-unit transitions. They await
+user design review and technical validation in the walking skeleton; this does
+not imply implementation approval or a demonstrated working backend.

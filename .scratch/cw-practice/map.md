@@ -26,5 +26,9 @@ separate disposable prototype or second implementation plan.
 to delegate or implement concurrently. Each ticket verifies its own behavior;
 10 checks the assembled experience rather than absorbing deferred correctness.
 
-The user authorized revising these drafts. Design execution and application
-implementation have not started; request each stage according to AGENTS.md.
+Ticket 00 design has been authored: [UI](../../docs/design/terminal-ui.md),
+[architecture](../../docs/design/playback-architecture.md), and
+[skeleton acceptance](../../docs/design/skeleton-acceptance.md).
+Its status is ready-for-human for design review. Ticket 01 remains blocked on
+that review and an explicit implementation request; tickets 01–10 have not started.
+The user authorized only ticket 00 in this turn.

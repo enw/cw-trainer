@@ -12,10 +12,17 @@
 - [ ] Provide a spoken-phrase editor for ordinary items and existing exchange lines; allow an editable override for each; preserve it when loading and clearly handle subsequent CW-text edits.
 - [ ] Keep the shared configurable pause between portions, starting after speech completes. Never overlap speech and CW.
 - [ ] Preserve the skeleton’s reviewed speak-now/pause/navigation semantics across the new playback modes.
-- [ ] Proposed default: reset the repetition count on item/style changes; count only completed CW repetitions. Follow the skeleton’s reviewed speech-resumption behavior.
+- [ ] Design decision: reset the repetition count on item/style changes; count only completed CW repetitions. Follow the skeleton’s reviewed speech-resumption behavior.
 - [ ] Extend the skeleton’s cancellation and error handling across every new mode transition; verify speech and CW never overlap.
 - [ ] Verify portion order, counts, cancellation, speech failures, and pause timing with controlled outputs; smoke-check actual Mac speech and pronunciation.
 
 ## Boundary
 
 Speech does not require a particular display mode. Cross-mode coverage is completed once ticket 05 is also available.
+
+## Design reference
+
+Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
+[playback architecture](../../../docs/design/playback-architecture.md).
+Design is authored but awaits user review and skeleton validation; this ticket
+has not started.

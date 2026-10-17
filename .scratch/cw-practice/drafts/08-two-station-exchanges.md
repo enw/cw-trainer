@@ -17,3 +17,10 @@
 ## Boundary
 
 Basic exchange playback, station routing, persistence, and navigation are owned by the skeleton. This slice adds editing and automatic progression; it does not introduce exchanges for the first time.
+
+## Design reference
+
+Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
+[playback architecture](../../../docs/design/playback-architecture.md).
+Design is authored but awaits user review and skeleton validation; this ticket
+has not started.

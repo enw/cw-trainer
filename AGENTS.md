@@ -7,8 +7,8 @@ them as dits and dahs while showing the current word and/or letter.
 
 - Configurable audio tone, starting at 440 Hz.
 - Configurable sending speed, starting at 15 WPM.
-- Language, terminal interaction, storage, playback controls, and precise timing
-  behavior remain open for requirements discussion.
+- Ticket 00 design is recorded in `docs/design/`; user review and walking-skeleton
+  validation are still pending. Consult it before changing interaction or stack decisions.
 
 ## Workflow
 

@@ -17,3 +17,10 @@
 ## Boundary
 
 Reuse the skeleton’s loading, saving, playback, and cancellation behavior. Exchange line editing belongs to ticket 08. Only minimal initial material is needed here. The complete curated library is delivered in ticket 09.
+
+## Design reference
+
+Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
+[playback architecture](../../../docs/design/playback-architecture.md).
+Design is authored but awaits user review and skeleton validation; this ticket
+has not started.

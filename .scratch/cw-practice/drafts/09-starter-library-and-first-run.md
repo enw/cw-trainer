@@ -15,3 +15,10 @@
 ## Boundary
 
 This slice owns content and non-destructive first-run seeding. Ticket 10 owns the final integrated walkthrough and user-facing operating instructions; every feature ticket retains its own correctness checks.
+
+## Design reference
+
+Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
+[playback architecture](../../../docs/design/playback-architecture.md).
+Design is authored but awaits user review and skeleton validation; this ticket
+has not started.

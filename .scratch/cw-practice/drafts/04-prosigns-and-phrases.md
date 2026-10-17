@@ -13,3 +13,10 @@
 - [ ] Store meaning and default spoken phrase information for supported prosigns, ready for speech playback.
 - [ ] Verify mappings and procedural meanings against authoritative references and record the sources.
 - [ ] Independently verify continuous prosign timing and mixed-phrase boundaries, including saved-item round trips.
+
+## Design reference
+
+Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
+[playback architecture](../../../docs/design/playback-architecture.md).
+Design is authored but awaits user review and skeleton validation; this ticket
+has not started.

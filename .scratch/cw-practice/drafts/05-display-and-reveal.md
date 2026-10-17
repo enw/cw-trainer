@@ -9,6 +9,13 @@
 - [ ] Default to whole-item display; let the learner select and persist another display mode for each list.
 - [ ] Highlight the current ordinary character using the audio timing basis. Highlight an entire prosign as one unit.
 - [ ] Hidden mode conceals answer text in the practice view, including titles/previews/progress; R reveals the current item.
-- [ ] Proposed default: a revealed answer remains visible across repetitions and hides when the item changes, including navigation back to it.
+- [ ] Design decision: a revealed answer remains visible across repetitions and hides when the item changes, including navigation back to it.
 - [ ] Keep highlighting correct across pauses, cancellations, and next-repetition speed changes.
 - [ ] Verify visible output via session events and a real terminal synchronization check; document limits of automated timing evidence.
+
+## Design reference
+
+Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
+[playback architecture](../../../docs/design/playback-architecture.md).
+Design is authored but awaits user review and skeleton validation; this ticket
+has not started.

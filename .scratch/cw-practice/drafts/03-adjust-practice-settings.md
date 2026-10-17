@@ -12,3 +12,10 @@
 - [ ] Apply speed/tone edits at the next CW repetition, keeping the current rendering consistent; display pending values clearly when applicable.
 - [ ] Save settings per list and restore them after switching lists or restarting.
 - [ ] Verify setting changes during playback, invalid values, equal-speed timing, and persistence through the session boundary.
+
+## Design reference
+
+Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
+[playback architecture](../../../docs/design/playback-architecture.md).
+Design is authored but awaits user review and skeleton validation; this ticket
+has not started.
