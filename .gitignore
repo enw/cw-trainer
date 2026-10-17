@@ -1,2 +1,10 @@
+# Go build, test, coverage, and profiling artifacts.
 /bin/
+/cw-looper
+*.test
+/coverage.out
+/coverage.html
+/*.prof
+
+# macOS metadata. Keep .scratch/ plans, go.mod, and go.sum versioned.
 .DS_Store

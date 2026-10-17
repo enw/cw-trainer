@@ -101,3 +101,5 @@ by another key or restarted after resizing. Three regression tests reproduced
 the failures before the fix. Pending selection and paused continuation were
 moved into the session; the terminal now only dispatches navigation actions.
 The focused regressions and the full test/race/vet checks passed after the fix.
+Both reviewers rechecked the fix in `a03972a`: standards finding resolved;
+both spec findings resolved; no consequential new findings.
