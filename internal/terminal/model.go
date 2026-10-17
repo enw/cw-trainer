@@ -139,6 +139,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.screen == practice {
 			return m, m.practiceKey(key)
 		}
+		if key == "t" {
+			return m, m.startSending()
+		}
 		if key == "a" || key == "A" || key == "e" || key == "x" || key == "J" || key == "K" {
 			return m, m.editKey(key)
 		}
@@ -174,7 +177,7 @@ func (m *Model) applyEffects(effects []session.Effect) tea.Cmd {
 			continue
 		}
 		var line library.Line
-		if effect.Kind == session.PlayCW || effect.Kind == session.PlaySpeech {
+		if effect.Kind == session.PlayCW || effect.Kind == session.PlaySpeech || effect.Kind == session.PlayAttempt {
 			line = m.currentLines()[m.session.Line]
 		}
 		events := m.runner.Execute(effect, line)
@@ -194,6 +197,9 @@ func (m *Model) applyEffects(effects []session.Effect) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 func (m *Model) practiceKey(key string) tea.Cmd {
+	if cmd, handled := m.sendingKey(key); handled {
+		return cmd
+	}
 	action := session.Input{}
 	switch key {
 	case "space":

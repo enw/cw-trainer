@@ -57,6 +57,13 @@ func (m *Mac) CWProgress(ctx context.Context, text string, hz, character, overal
 	if err != nil {
 		return err
 	}
+	return m.playTimeline(ctx, timeline, hz, progress)
+}
+
+func (m *Mac) Timeline(ctx context.Context, timeline morse.Timeline, hz float64) error {
+	return m.playTimeline(ctx, timeline, hz, func(int64) {})
+}
+func (m *Mac) playTimeline(ctx context.Context, timeline morse.Timeline, hz float64, progress func(int64)) error {
 	pcm, err := morse.NewPCM(timeline, hz)
 	if err != nil {
 		return err

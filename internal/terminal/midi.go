@@ -3,6 +3,7 @@ package terminal
 import (
 	tea "charm.land/bubbletea/v2"
 	"cw-looper/internal/midi"
+	"cw-looper/internal/session"
 	"fmt"
 	"strings"
 	"time"
@@ -105,6 +106,7 @@ func (m *Model) midiMessage(msg tea.Msg) tea.Cmd {
 		if state.received > 0 {
 			state.status = fmt.Sprintf("Receiving · %d events · %d held notes", state.received, len(state.down))
 		}
+		m.dispatch(session.Input{Kind: session.CaptureClock, At: midi.HostTime()})
 		return midiTick(state.generation)
 	}
 	return nil
@@ -169,7 +171,3 @@ func (m *Model) midiView() string {
 	b.WriteString("\nEnter enables MIDI on selected device · f refresh · d disconnect\nIambic keyer, speed and sidetone unchanged; quit restores keyboard mode.\nEsc returns with MIDI connected · j/k select · q quit")
 	return b.String()
 }
-
-// Sending integration supplies these hooks in the next dependent slice.
-func (m *Model) midiEvent(event midi.Event) {}
-func (m *Model) midiLost(err error) tea.Cmd { m.notice = err.Error(); return nil }

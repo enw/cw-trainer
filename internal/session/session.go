@@ -2,20 +2,26 @@
 package session
 
 import (
+	"cw-looper/internal/keying"
 	"cw-looper/internal/library"
+	"cw-looper/internal/morse"
 	"time"
 )
 
 type Phase string
 
 const (
-	Idle     Phase = "Stopped"
-	CW       Phase = "CW"
-	Speech   Phase = "Speaking"
-	Gap      Phase = "Gap"
-	Paused   Phase = "Paused"
-	Stopping Phase = "Stopping"
-	Failed   Phase = "Error"
+	Idle      Phase = "Stopped"
+	CW        Phase = "CW"
+	Speech    Phase = "Speaking"
+	Gap       Phase = "Gap"
+	Paused    Phase = "Paused"
+	Stopping  Phase = "Stopping"
+	Failed    Phase = "Error"
+	Ready     Phase = "Ready to send"
+	Capturing Phase = "Capturing"
+	Captured  Phase = "Attempt review"
+	Replay    Phase = "Replaying attempt"
 )
 
 type Kind int
@@ -35,9 +41,18 @@ const (
 	Error
 	Reveal
 	Progress
+	BeginCapture
+	FinishCapture
+	ReplayAttempt
+	Reference
+	KeyEvent
+	CaptureClock
+	InputLost
 )
 
 type Input struct {
+	At     time.Duration
+	Event  keying.Event
 	Kind   Kind
 	ID     uint64
 	Sample int64
@@ -51,9 +66,11 @@ const (
 	Wait
 	StopOutput
 	Exit
+	PlayAttempt
 )
 
 type Effect struct {
+	Timeline morse.Timeline
 	Settings library.Settings
 	Kind     EffectKind
 	ID       uint64
@@ -61,6 +78,8 @@ type Effect struct {
 }
 
 type Session struct {
+	SendBack bool
+	Attempt  keying.Attempt
 	// Shuffle permits deterministic rounds in session tests. Nil uses random order.
 	Shuffle                  func([]int)
 	exchangeEntries          []bool
@@ -100,6 +119,9 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 	if s.quitting && in.Kind != Stopped && in.Kind != Done && in.Kind != Error {
 		return nil
 	}
+	if effects, handled := s.sendingInput(in, now); handled {
+		return effects
+	}
 	switch in.Kind {
 	case Reveal:
 		s.Revealed = !s.Revealed
@@ -110,12 +132,21 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 	case Done, Stopped, Error:
 		return s.outputEvent(in, now)
 	case Quit:
+		if s.Attempt.Active {
+			s.Attempt.Invalidate("Capture cancelled")
+		}
 		s.quitting = true
 		return s.transition(Idle, now)
 	case Back:
+		if s.Attempt.Active {
+			s.Attempt.Invalidate("Capture cancelled")
+		}
 		s.speechReturnsPaused = false
 		return s.transition(Idle, now)
 	case Start:
+		if s.SendBack {
+			s.Attempt = keying.Attempt{}
+		}
 		if s.lines == 0 {
 			return nil
 		}
@@ -151,6 +182,9 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 	case TogglePause:
 		return s.pause(now)
 	case Speak:
+		if s.Attempt.Active {
+			s.Attempt.Invalidate("Capture interrupted by speech; retry")
+		}
 		if s.lines == 0 || s.Phase == Idle || s.Phase == Failed {
 			return nil
 		}
@@ -169,7 +203,7 @@ func (s *Session) transition(target Phase, now time.Time) []Effect {
 	if s.Phase == Stopping {
 		return nil
 	}
-	if s.Phase == CW || s.Phase == Speech || s.Phase == Gap {
+	if s.Phase == CW || s.Phase == Speech || s.Phase == Gap || s.Phase == Replay {
 		s.Phase = Stopping
 		return []Effect{{Kind: StopOutput, ID: s.id}}
 	}
@@ -181,6 +215,7 @@ func (s *Session) begin(target Phase, now time.Time) []Effect {
 		return []Effect{{Kind: Exit}}
 	}
 	var kind EffectKind
+	var timeline morse.Timeline
 	switch target {
 	case CW:
 		if s.unitInterval == 0 {
@@ -191,6 +226,16 @@ func (s *Session) begin(target Phase, now time.Time) []Effect {
 		s.ActiveSettings = s.Settings
 	case Speech:
 		kind = PlaySpeech
+	case Replay:
+		var err error
+		timeline, err = s.Attempt.Timeline()
+		if err != nil {
+			s.Phase = Captured
+			s.Attempt.Invalidate(err.Error())
+			return nil
+		}
+		kind = PlayAttempt
+		s.ActiveSettings = s.Settings
 	case Gap:
 		kind = Wait
 		s.gapUntil = now.Add(s.gapRemaining)
@@ -198,7 +243,7 @@ func (s *Session) begin(target Phase, now time.Time) []Effect {
 		return nil
 	}
 	s.id++
-	return []Effect{{Kind: kind, ID: s.id, Duration: s.gapRemaining, Settings: s.ActiveSettings}}
+	return []Effect{{Kind: kind, ID: s.id, Duration: s.gapRemaining, Settings: s.ActiveSettings, Timeline: timeline}}
 }
 func (s *Session) outputEvent(in Input, now time.Time) []Effect {
 	if in.ID != s.id {
@@ -210,13 +255,30 @@ func (s *Session) outputEvent(in Input, now time.Time) []Effect {
 		}
 		return nil
 	}
-	if in.Kind == Stopped || !(s.Phase == CW || s.Phase == Speech || s.Phase == Gap) {
+	if in.Kind == Stopped || !(s.Phase == CW || s.Phase == Speech || s.Phase == Gap || s.Phase == Replay) {
 		return nil
 	}
 	if in.Kind == Error {
 		s.Phase = Failed
 		s.Err = in.Err
 		return nil
+	}
+	if s.SendBack {
+		if s.Phase == CW {
+			s.Count++
+			return s.begin(Ready, now)
+		}
+		if s.Phase == Replay {
+			return s.begin(Captured, now)
+		}
+		if s.Phase == Speech {
+			if s.speechReturnsPaused {
+				s.speechReturnsPaused = false
+				s.resume = Ready
+				return s.begin(Paused, now)
+			}
+			return s.begin(Ready, now)
+		}
 	}
 	if s.Phase == Gap {
 		if s.unitComplete {
@@ -239,6 +301,11 @@ func (s *Session) outputEvent(in Input, now time.Time) []Effect {
 }
 
 func (s *Session) pause(now time.Time) []Effect {
+	if s.SendBack && s.Phase == Capturing {
+		s.Attempt.Invalidate("Capture paused; start a fresh attempt")
+		s.resume = Ready
+		return s.begin(Paused, now)
+	}
 	if s.Phase == Idle || s.Phase == Failed {
 		return nil
 	}
@@ -270,6 +337,8 @@ func (s *Session) SelectEntries(lengths []int, entry, index int) {
 	if s.Phase != Idle && s.Phase != Failed {
 		return
 	}
+	s.SendBack = false
+	s.Attempt = keying.Attempt{}
 	s.entryLengths = append([]int(nil), lengths...)
 	s.exchangeEntries = nil
 	s.resetRound()
@@ -292,6 +361,9 @@ func (s *Session) wantsPause() bool {
 	return s.Phase == Paused || (s.Phase == Stopping && s.pending == Paused) || s.speechReturnsPaused
 }
 func (s *Session) navigate(now time.Time) []Effect {
+	if s.SendBack {
+		s.Attempt = keying.Attempt{}
+	}
 	s.Revealed = false
 	s.Sample = -1
 	s.resetRound()

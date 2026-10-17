@@ -6,7 +6,8 @@ common terms, continuous prosigns, and two-station exchanges. Start with
 
 ## Run
 
-Requires Go 1.26+, macOS, `/usr/bin/say`, and a configured audio output.
+Requires Go 1.26+, macOS, Xcode Command Line Tools (for the native MIDI bridge),
+`/usr/bin/say`, and a configured audio output.
 Tested on macOS 26.6.2, Apple silicon. Use a terminal at least 80 × 24.
 
 ```sh
@@ -33,6 +34,8 @@ practice examples, not a real contact; [content sources](docs/design/content-sou
 | Space | — | Pause/resume |
 | s / S | — | Speak current phrase now |
 | r / R | — | Toggle answer reveal |
+| m | MIDI device diagnostic | — |
+| t | Send back selected item/line (requires MIDI) | — |
 | p | List settings (inside a list) | Settings overlay; playback continues |
 | a | Add list, ordinary item or exchange line | — |
 | A | Add an exchange inside a list | — |
@@ -91,6 +94,33 @@ spacing to achieve overall speed. Equal speeds use standard spacing.
 - Speed/tone changes apply at the next CW rendering; interval changes at the
   next practice unit. Style/sequence/line-mode changes restart the unit through
   cancellation, preserving pause. Display changes apply immediately.
+
+## Vail touch-pad send-back practice
+
+Connect your adapter, press **m** while browsing, select its MIDI input, then
+**Enter** to enable MIDI. This changes only USB output mode; the adapter keeps
+its keyer, speed and sidetone settings. The diagnostic shows received key events
+and mark durations. **d** disconnects; **f** refreshes devices; **Esc** returns
+with the connection active. Normal app exit returns the adapter to keyboard
+output. Device removal requires reconnecting explicitly; a lost connection
+invalidates capture instead of guessing missing marks.
+
+Select an ordinary item or exchange line and press **t**:
+
+1. Hear the reference once. Automatic list progression is suspended.
+2. Release both pads, then **Enter** to begin capture. Send with local sidetone.
+3. **Enter** finishes; **y** replays your measured timing, **v** the reference.
+4. **Enter** starts another attempt; **n** starts a new reference and attempt.
+
+Space pauses audio; pausing capture abandons the partial attempt and resumes at
+Ready. h/l and arrows navigate; R reveals hidden text; Esc returns to browsing.
+Two-minute/1024-mark limits bound capture. Empty, overlapping, unmatched or held
+marks at finish are incomplete and cannot replay. Attempts are session-local.
+The app captures MIDI timings, not microphone audio, and generates no duplicate
+live sidetone. Hardware sending speed remains independent of reference WPM.
+The [hardware record](docs/design/vail-midi-verification.md) describes the tested
+QT Py M0 adapter's note-1/2 behavior; note-0 timed firmware is supported too.
+Decoding and graded feedback are a later slice.
 
 ## Saved material and recovery
 

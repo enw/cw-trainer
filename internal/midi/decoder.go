@@ -1,13 +1,13 @@
 // Package midi provides timestamped key events, independent of terminal focus.
 package midi
 
-import "time"
+import (
+	"cw-looper/internal/keying"
+	"time"
+)
 
-type Event struct {
-	At   time.Duration // Monotonic host time, not wall-clock time or poll arrival time.
-	Note byte
-	Down bool
-}
+type Event = keying.Event
+
 type Device struct {
 	ID   int32
 	Name string

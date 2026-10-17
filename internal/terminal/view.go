@@ -23,7 +23,11 @@ func (m *Model) View() tea.View {
 	case m.help:
 		content = "cw-looper · Help\n\nBrowse: j/k or arrows select; Enter/l opens; Esc/h returns.\na adds a list/item/line; A adds an exchange; e edits; x deletes.\nJ/K reorder; i imports starter copies from Lists.\n\nPractice: Space pauses; h/l or arrows change item/line.\n[/] change top-level items; R reveals; s speaks now.\np edits per-list settings; Esc stops and returns; q quits.\nManual exchange lines repeat until Next; automatic lines stay ordered.\n\nStyles: cw = CW only; sandwich = CW-talk-CW; occasional = N CW, talk.\nCycle/shuffle advance only after a complete practice unit.\nPause restarts an interrupted CW/speech portion; gaps retain remainder.\nNavigation stays silent while paused. Settings/help keep playing.\n\nForms: Tab fields; Ctrl+P prosigns; Ctrl+S saves; Esc cancels.\nClear a spoken override to restore generated speech.\n? or Esc closes help · q quit"
 	case m.screen == practice:
-		content = m.practiceView()
+		if m.session.SendBack {
+			content = m.sendingView()
+		} else {
+			content = m.practiceView()
+		}
 	default:
 		content = m.browseView()
 	}
@@ -74,7 +78,7 @@ func (m *Model) browseView() string {
 		}
 		fmt.Fprintf(&b, "%s %s\n", marker, clip(rows[i], m.width-4))
 	}
-	b.WriteString("\nj/k select · Enter open · a add · A exchange · e edit · x delete\nJ/K reorder · p settings · m MIDI · i import (Lists)\nEsc back · ? help · q quit")
+	b.WriteString("\nj/k select · Enter open · a add · A exchange · e edit · x delete\nJ/K reorder · p settings · m MIDI · t send-back · i import (Lists)\nEsc back · ? help · q quit")
 	return b.String()
 }
 func (m *Model) practiceView() string {

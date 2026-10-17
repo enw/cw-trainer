@@ -4,6 +4,7 @@ package output
 import (
 	"context"
 	"cw-looper/internal/library"
+	"cw-looper/internal/morse"
 	"cw-looper/internal/session"
 	"fmt"
 	"sync"
@@ -90,6 +91,19 @@ func (r *Runner) Execute(effect session.Effect, line library.Line) <-chan sessio
 				})
 			} else {
 				err = r.backend.CW(ctx, line.CW, hz, config.CharacterWPM, config.OverallWPM)
+			}
+		case session.PlayAttempt:
+			backend, ok := r.backend.(interface {
+				Timeline(context.Context, morse.Timeline, float64) error
+			})
+			if !ok {
+				err = fmt.Errorf("output cannot replay measured timing")
+			} else {
+				hz := effect.Settings.LearnerHz
+				if line.Station == "other" {
+					hz = effect.Settings.OtherHz
+				}
+				err = backend.Timeline(ctx, effect.Timeline, hz)
 			}
 		case session.PlaySpeech:
 			err = r.backend.Speech(ctx, library.Spoken(line))
