@@ -51,5 +51,6 @@ completed 09. The separate Vail input path starts with hardware verification.
 | [15](issues/15-sending-feedback.md) | Tentative decode and timing/spacing feedback | 14 |
 
 Vail sequence: **13 → 14 → 15**. The learner uses capacitive touch pads with
-Iambic B. USB MIDI support is documented upstream but unverified on their
-particular device; 14 cannot claim hardware readiness until 13 proves it.
+Iambic B. A cooperative CoreMIDI probe verified their actual USB MIDI marks;
+see [device evidence](../../docs/design/vail-midi-verification.md). Ticket 13
+still needs the app diagnostic and disconnect/reconnect handling before 14.

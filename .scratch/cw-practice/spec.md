@@ -262,3 +262,10 @@ that this user's firmware is emitting MIDI; verify the actual path first.
 Tickets 13–15 extend the original listening-only scope as queued work. The
 original out-of-scope keying exclusions still describe the shipped 00–10 app;
 no sending integration has been implemented or hardware reconfigured here.
+
+
+Hardware follow-up: on 2026-10-16, a cooperative CoreMIDI probe received actual
+mark events from the user's QT Py M0 adapter, with ~80 ms dits and ~240 ms dahs,
+held repeats and squeeze alternation. The user confirmed local sidetone. The
+probe restored keyboard output afterward. See the Vail verification record;
+this verifies hardware input, not an implemented sending feature in the app.
