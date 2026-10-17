@@ -8,17 +8,10 @@ import (
 // Starter is copied only into a missing library or on explicit import. It is
 // never merged into existing user data by version number.
 func Starter() Library {
-	data := Library{SchemaVersion: 1, SeedVersion: 2}
-	items := func(id, name string, words [][2]string) List {
-		list := List{ID: id, Name: name, Settings: Defaults()}
-		for i, word := range words {
-			entryID := fmt.Sprintf("%s-%d", id, i)
-			list.Entries = append(list.Entries, Entry{ID: entryID, Kind: "item", Title: word[0], Lines: []Line{{ID: entryID + "-line", Station: "learner", CW: word[0], Spoken: word[1]}}})
-		}
-		return list
-	}
-	data.Lists = append(data.Lists, items("callsign", "My callsign · KE2ISH", [][2]string{{"KE2ISH", ""}, {"DE KE2ISH", ""}, {"CQ CQ DE KE2ISH K", ""}}))
-	data.Lists = append(data.Lists, items("terms", "Common CW terms", [][2]string{
+	data := Library{SchemaVersion: 1, SeedVersion: 3}
+
+	data.Lists = append(data.Lists, starterItems("callsign", "My callsign · KE2ISH", [][2]string{{"KE2ISH", ""}, {"DE KE2ISH", ""}, {"CQ CQ DE KE2ISH K", ""}}))
+	data.Lists = append(data.Lists, starterItems("terms", "Common CW terms", [][2]string{
 		{"CQ", "see cue"}, {"DE", "D E, from"}, {"K", "K, invitation to transmit"}, {"R", "R, received"}, {"TU", "T U, thank you"}, {"73", "seventy three, best regards"},
 		{"QTH", "Q T H, location"}, {"RST", "R S T, readability strength tone"}, {"QRS", "Q R S, send more slowly"}, {"AGN", "again"}, {"PSE", "please"}, {"TNX", "thanks"}, {"UR", "your"}, {"ES", "and"}, {"NAME", "name"}, {"HW", "H W, how copy"}, {"QSO", "Q S O, contact"}, {"QRM", "Q R M, interference"}, {"QRN", "Q R N, static"}, {"QSB", "Q S B, fading"}, {"QRL", "Q R L, busy"}, {"QRZ", "Q R Z, who is calling"},
 	}))
@@ -26,7 +19,7 @@ func Starter() Library {
 	for _, p := range morse.Prosigns {
 		prosigns = append(prosigns, [2]string{p.Token, p.Meaning})
 	}
-	data.Lists = append(data.Lists, items("prosigns", "Continuous prosigns", prosigns))
+	data.Lists = append(data.Lists, starterItems("prosigns", "Continuous prosigns", prosigns))
 	exchanges := List{ID: "exchanges", Name: "Two-station exchanges · practice examples", Settings: Defaults()}
 	exchange := func(id, title string, firstOther bool, texts ...string) {
 		entry := Entry{ID: id, Kind: "exchange", Title: title}
@@ -65,6 +58,15 @@ func Starter() Library {
 		"W1AW DE KE2ISH NAME ELLIOT ELLIOT K",
 		"R TNX FER QSO 73 <SK> KE2ISH DE W1AW",
 		"TU 73 <SK> W1AW DE KE2ISH")
-	data.Lists = append(data.Lists, exchanges)
+	data.Lists = append(data.Lists, exchanges, PhoneticStarter())
 	return data
+}
+
+func starterItems(id, name string, words [][2]string) List {
+	list := List{ID: id, Name: name, Settings: Defaults()}
+	for i, word := range words {
+		entryID := fmt.Sprintf("%s-%d", id, i)
+		list.Entries = append(list.Entries, Entry{ID: entryID, Kind: "item", Title: word[0], Lines: []Line{{ID: entryID + "-line", Station: "learner", CW: word[0], Spoken: word[1]}}})
+	}
+	return list
 }

@@ -18,7 +18,7 @@ func TestStarterAndUpgradePreserveUserLibrary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(data.Lists) != 4 || len(data.Lists[3].Entries) != 6 {
+	if len(data.Lists) != 5 || len(data.Lists[3].Entries) != 6 {
 		t.Fatal("starter categories missing")
 	}
 	data.Lists[0].Settings.Style = "occasional"

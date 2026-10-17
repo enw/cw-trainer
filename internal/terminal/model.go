@@ -21,6 +21,7 @@ const (
 )
 
 type Model struct {
+	reference                *operatingReference
 	feedbackOpen             bool
 	feedbackScroll           int
 	sendWPM                  float64
@@ -104,7 +105,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.confirm != nil {
 			return m, m.confirmKey(key)
 		}
-		if key == "i" && m.screen == lists {
+		if key == "i" && m.screen == lists && m.reference == nil {
 			return m, m.importStarter()
 		}
 		if key == "ctrl+s" && m.dirty {
@@ -119,6 +120,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.midi.open {
 			return m, m.midiKey(key)
+		}
+		if m.reference != nil {
+			return m, m.referenceKey(key)
+		}
+		if key == "o" && !m.small() {
+			m.reference = &operatingReference{}
+			return m, nil
 		}
 		if key == "m" && m.screen != practice {
 			return m, m.openMIDI()

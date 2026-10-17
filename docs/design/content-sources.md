@@ -21,3 +21,10 @@ W1AW is a real callsign used here solely as a consistent example counterpart.
 Names, locations and reports in these exchanges are invented practice details,
 not assertions about an actual contact, operator, or the learner's location.
 There is no radio transmission. Separate station tones are a learning aid.
+
+## NATO/ITU phonetic list
+
+Verified A–Z against [ARRL Quick Reference Operating Aids](https://www.arrl.org/quick-reference-operating-aids)
+on 2026-10-17, including Alfa, Juliett and X-ray. The individual letter is the
+CW content; the spelling word is an explicit editable spoken override. Existing
+callsign speech is unchanged. The same mapping supplies the terminal reference.

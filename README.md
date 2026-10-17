@@ -50,8 +50,8 @@ go build -o bin/cw-looper ./cmd/cw-looper
 
 For a quick run without a separate build step: `go run ./cmd/cw-looper`.
 
-First launch installs four editable lists: callsign, common terms, prosigns,
-and exchanges. Enter opens a list; Enter on an ordinary item starts practice.
+First launch installs five editable lists: callsign, common terms, prosigns,
+exchanges, and the NATO/ITU alphabet. Enter opens a list; Enter on an ordinary item starts practice.
 For an exchange, open it and then start a selected line. Browsing is silent.
 An eight-line example contact is included. Names, reports and locations are
 practice examples, not a real contact; [content sources](docs/design/content-sources.md).
@@ -145,6 +145,7 @@ That completes the human check that automated tests cannot provide.
 | Space | — | Pause/resume |
 | s / S | — | Speak current phrase now |
 | r / R | — | Toggle answer reveal |
+| o | Operating reference | Operating reference; Space pauses/resumes |
 | m | MIDI device diagnostic | — |
 | t | Send back selected item/line (requires MIDI) | — |
 | p | List settings (inside a list) | Settings overlay; playback continues |
@@ -168,6 +169,18 @@ Spoken overrides are optional. Clear the spoken field to use generated speech:
 CQ is “see cue,” callsigns are spelled, words are read naturally, and prosigns
 use their meanings. Custom speech survives CW edits, so review it after changing
 CW. Overrides and all accepted settings save automatically.
+
+## Operating reference and phonetic practice
+
+Press **o** for the NATO/ITU alphabet. **j/k** or arrows scroll; **Esc/o** returns
+without changing your practice selection. From browsing, **i** inside the
+reference imports just that editable list after confirmation. Top-level **i**
+continues to import all starter lists. Existing edits and deletions are preserved.
+
+The phonetic list sends each individual letter in CW and uses its standardized
+word as an editable spoken prompt: `A` CW → “Alfa” → `A` CW. It defaults to
+`sandwich`; all display, sequence and speech controls still apply. This does not
+change the normal letter-name speech for callsigns elsewhere.
 
 ## Practice settings
 
