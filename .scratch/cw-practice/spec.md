@@ -241,3 +241,10 @@ counts, shuffle, reveal lifetime, and playback-unit transitions. The user approv
 the design and ticket 01 implementation. The walking skeleton now has software
 and real-output lifecycle verification; final listening acceptance is still
 pending. See the [verification record](../../docs/design/skeleton-verification.md).
+
+## Requested follow-ups (2026-10-16)
+
+The user requested issues for NATO phonetic-alphabet and RST-system learning,
+using the ARRL Quick Reference Operating Aids. Tickets 11 and 12 in the canonical
+map capture these additions. They are queued for later scope review and
+implementation; the current implementation remains tickets 02–10.

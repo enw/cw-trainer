@@ -31,3 +31,13 @@ ready-for-human for final listening acceptance; see the
 [verification record](../../docs/design/skeleton-verification.md).
 Tickets 02–10 have not started. The current user request authorized only the
 walking skeleton. Software checks do not replace audible quality/tail validation.
+
+## Queued follow-ups
+
+The user requested these issues during implementation; they are not part of the
+current 02–10 build. They are independent of each other and reuse completed 09.
+
+| Ticket | Delivers | Blocked by |
+| --- | --- | --- |
+| [11](issues/11-nato-phonetic-alphabet.md) | NATO/ITU phonetic alphabet practice and reference | 09 |
+| [12](issues/12-rst-system.md) | RST report practice and rating-scale reference | 09 |
