@@ -105,6 +105,9 @@ func (l Library) Validate() error {
 				if line.Station != "learner" && line.Station != "other" {
 					return fmt.Errorf("invalid station role")
 				}
+				if !plain(line.CW, morse.MaxText) {
+					return fmt.Errorf("CW text must be nonempty plain text")
+				}
 				if _, err := morse.Compile(line.CW, 20, 15, false); err != nil {
 					return err
 				}

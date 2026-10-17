@@ -26,9 +26,8 @@ separate disposable prototype or second implementation plan.
 to delegate or implement concurrently. Each ticket verifies its own behavior;
 10 checks the assembled experience rather than absorbing deferred correctness.
 
-Ticket 00 design has been authored: [UI](../../docs/design/terminal-ui.md),
-[architecture](../../docs/design/playback-architecture.md), and
-[skeleton acceptance](../../docs/design/skeleton-acceptance.md).
-Its status is ready-for-human for design review. Ticket 01 remains blocked on
-that review and an explicit implementation request; tickets 01–10 have not started.
-The user authorized only ticket 00 in this turn.
+Ticket 00 design is approved and resolved. Ticket 01 is implemented and
+ready-for-human for final listening acceptance; see the
+[verification record](../../docs/design/skeleton-verification.md).
+Tickets 02–10 have not started. The current user request authorized only the
+walking skeleton. Software checks do not replace audible quality/tail validation.

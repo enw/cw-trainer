@@ -70,3 +70,44 @@ func TestLoadFailureNeverSeeds(t *testing.T) {
 		})
 	}
 }
+
+func TestFailedSavePreservesLibrary(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "library.json")
+	store, err := library.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := store.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, _ := os.ReadFile(path)
+	data.Lists[0].Entries[0].Lines[0].CW = "UNSUPPORTED!"
+	if err := store.Save(data); err == nil {
+		t.Fatal("invalid save accepted")
+	}
+	after, _ := os.ReadFile(path)
+	if string(after) != string(before) {
+		t.Fatal("invalid save replaced data")
+	}
+	store.Close()
+	if err := store.Save(library.Fixture()); err == nil {
+		t.Fatal("closed store can save")
+	}
+	// A directory at the destination causes a real rename failure even as root.
+	badPath := filepath.Join(t.TempDir(), "library.json")
+	store, err = library.Open(badPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+	if err := os.Mkdir(badPath, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Save(library.Fixture()); err == nil {
+		t.Fatal("rename failure ignored")
+	}
+	if entries, _ := filepath.Glob(filepath.Join(filepath.Dir(badPath), ".library-*")); len(entries) != 0 {
+		t.Fatal("temporary files leaked")
+	}
+}

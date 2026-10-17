@@ -110,3 +110,19 @@ func TestSpeechInterruptionAndOutputErrors(t *testing.T) {
 		t.Fatal("failure loops or disappears")
 	}
 }
+
+func TestLeavingAndSelectingExchangeKeepsGenerationsUnique(t *testing.T) {
+	s := session.New(2)
+	now := time.Now()
+	old := s.Update(session.Input{Kind: session.Start}, now)[0]
+	s.Update(session.Input{Kind: session.Back}, now)
+	s.Update(session.Input{Kind: session.Stopped, ID: old.ID}, now)
+	s.Select(2, 1)
+	fresh := s.Update(session.Input{Kind: session.Start}, now)[0]
+	if fresh.ID == old.ID {
+		t.Fatal("exchange switch reused ID")
+	}
+	if fx := s.Update(session.Input{Kind: session.Done, ID: old.ID}, now); len(fx) != 0 {
+		t.Fatal("late previous exchange event accepted")
+	}
+}

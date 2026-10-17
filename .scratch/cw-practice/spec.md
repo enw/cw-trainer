@@ -82,8 +82,10 @@ to repeating the current line.
   terminal presentation, and operating-system audio/speech integration as
   distinct responsibilities. Choose the smallest architecture that supports
   testing the session's observable behavior.
-- Language, terminal library, audio library, storage format, and packaging are
-  not yet selected. Do not interpret this spec as a stack decision.
+- Stack choices are recorded in the approved ticket 00 architecture: Go,
+  Bubble Tea, Oto, macOS speech, and JSON storage. This spec remains the product
+  requirements source; consult the architecture and verification record for
+  current implementation details.
 - Treat recognition of complete sounds as the main design goal. Character
   highlighting is optional; do not make letter decoding the default exercise.
 
@@ -235,6 +237,7 @@ The edge behaviors discussed during specification are resolved in the
 [ticket 00 UI design](../../docs/design/terminal-ui.md) and
 [playback architecture](../../docs/design/playback-architecture.md).
 Those documents are the single source for navigation, pause/resume, speech
-counts, shuffle, reveal lifetime, and playback-unit transitions. They await
-user design review and technical validation in the walking skeleton; this does
-not imply implementation approval or a demonstrated working backend.
+counts, shuffle, reveal lifetime, and playback-unit transitions. The user approved
+the design and ticket 01 implementation. The walking skeleton now has software
+and real-output lifecycle verification; final listening acceptance is still
+pending. See the [verification record](../../docs/design/skeleton-verification.md).

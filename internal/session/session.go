@@ -19,6 +19,7 @@ type Kind int
 
 const (
 	Start Kind = iota
+	StartPaused
 	Next
 	Previous
 	TogglePause
@@ -83,13 +84,16 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 	case Back:
 		s.speechReturnsPaused = false
 		return s.transition(Idle, now)
-	case Start:
+	case Start, StartPaused:
 		if s.lines == 0 {
 			return nil
 		}
 		s.Err = nil
 		s.Count = 0
 		s.resume = CW
+		if in.Kind == StartPaused {
+			return s.transition(Paused, now)
+		}
 		return s.transition(CW, now)
 	case Next, Previous:
 		step := 1
@@ -211,4 +215,24 @@ func (s *Session) pause(now time.Time) []Effect {
 		s.gapRemaining = max(0, s.gapUntil.Sub(now))
 	}
 	return s.transition(Paused, now)
+}
+
+// Select changes the available lines only while stopped, preserving generation
+// IDs so a late worker event from another exchange cannot match a new operation.
+func (s *Session) Select(lines, index int) {
+	if s.Phase != Idle && s.Phase != Failed {
+		return
+	}
+	s.lines = lines
+	s.Line = min(max(index, 0), max(0, lines-1))
+	s.Count = 0
+	s.Err = nil
+	s.Phase = Idle
+	s.resume = CW
+	s.speechReturnsPaused = false
+}
+
+// WantsPause includes an in-flight cancellation and speak-now while paused.
+func (s *Session) WantsPause() bool {
+	return s.Phase == Paused || (s.Phase == Stopping && s.pending == Paused) || s.speechReturnsPaused
 }

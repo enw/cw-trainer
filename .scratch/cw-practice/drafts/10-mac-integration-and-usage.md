@@ -21,5 +21,5 @@ This is integrated acceptance and documentation, not a place to defer feature co
 
 Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
 [playback architecture](../../../docs/design/playback-architecture.md).
-Design is authored but awaits user review and skeleton validation; this ticket
-has not started.
+Design is approved. Skeleton software is implemented, with listening acceptance
+pending. This ticket has not started.

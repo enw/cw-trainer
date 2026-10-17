@@ -1,7 +1,8 @@
 # Playback and storage architecture
 
-Ticket 00 design, 2026-10-16. Selected approach awaiting user review and ticket 01
-validation; no application code, dependencies, or audio experiments added yet.
+Ticket 00 design, 2026-10-16. User-approved approach. Ticket 01 software is implemented;
+[verification evidence](skeleton-verification.md) distinguishes completed checks
+from outstanding listening acceptance.
 See [terminal UI](terminal-ui.md) for behavior and
 [skeleton acceptance](skeleton-acceptance.md) for the first executable slice.
 
@@ -43,7 +44,7 @@ and SDK 26.5. These are observed development conditions, not supported minimums.
 Ticket 01 must pin compatible released dependency versions in its module files
 and establish a tested macOS/architecture baseline. Oto docs reviewed were
 v3.5.1, which has `PauseAndStopReading`; verify the actual pinned version's API.
-No install, cross-platform support, or deployment claim is made by this design.
+Ticket 01 pins Bubble Tea v2.1.0 and Oto v3.5.1. See the verification record for tested conditions; no cross-platform support is claimed.
 
 ## Modules and ownership
 

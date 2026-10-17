@@ -1,9 +1,9 @@
 # Design verification and walking-skeleton handoff
 
-Ticket 00 design, 2026-10-16. These are planned checks, not results from a running
-application. [UI](terminal-ui.md) and [architecture](playback-architecture.md) are
-the canonical designs. Ticket 01 remains blocked on user design review and an
-explicit request to implement it.
+Ticket 00 design, 2026-10-16. This is the acceptance script; observed results are recorded in
+[skeleton verification](skeleton-verification.md). [UI](terminal-ui.md) and [architecture](playback-architecture.md) are
+the canonical designs. The user approved the design and authorized ticket 01. Software implementation
+and checks are complete; final listening acceptance remains pending.
 
 ## Small fixture
 

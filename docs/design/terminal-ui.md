@@ -1,6 +1,6 @@
 # Terminal interaction design
 
-Ticket 00 design, 2026-10-16. Ready for user review; not implemented.
+Ticket 00 design, 2026-10-16. Approved by the user. Ticket 01 implements only the skeleton subset; later views/modes remain planned.
 This resolves the spec's open interaction defaults. Product scope is unchanged.
 Technical details live in [playback architecture](playback-architecture.md);
 validation and the ticket 01 fixture live in [skeleton acceptance](skeleton-acceptance.md).
