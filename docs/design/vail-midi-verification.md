@@ -60,7 +60,9 @@ Tickets 13–15 now provide a native MIDI diagnostic, reference/capture/replay,
 and tentative decoding with spacing feedback. Automated checks cover recorded
 mark lengths, event handling, capture interruption, replay timing, independent
 sending speed, uncertainty, prosigns and hidden-target comparison. The app has
-enumerated and connected to QT Py M0 and played a reference. These checks do not
-replace the remaining cooperative in-app touch/unplug/reconnect and replay/
-feedback listening walkthrough. The temporary standalone Swift probes were used
+enumerated and connected to QT Py M0 and played a reference. On 2026-10-17, the user reported running the README A capture/decode/replay
+walkthrough with no problems. This accepts the basic live send-back path, including
+replay listening and A feedback. No new timing measurements were collected.
+Unplug/reconnect and broader live feedback cases (word spacing, prosigns,
+uncertain or mismatched attempts) remain unconfirmed. The temporary standalone Swift probes were used
 from `/tmp`; they are not installed features or repository source.

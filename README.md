@@ -31,8 +31,9 @@ LISTEN  ──→  READY  ──→  SEND  ──→  REPLAY + FEEDBACK
 ```
 
 > **Status:** Listening practice, Vail capture/replay, and tentative feedback are
-> implemented. Automated checks pass; the integrated hardware listening walkthrough
-> below still needs human acceptance. Badges describe the stack, not CI status.
+> implemented. Automated checks pass; the live `A` capture/decode/replay walkthrough
+> passed on 2026-10-17. Unplug/reconnect and broader live feedback checks remain
+> open. Badges describe the stack, not CI status.
 
 ## Get started
 
@@ -238,7 +239,8 @@ showing the target or comparison. Unknown marks and ambiguous gaps stay uncertai
 prosign aliases such as `<AR>/+` share one continuous pattern. There is no accuracy
 score. The adapter generates element lengths; your spacing is the useful manual
 signal. Tolerances are documented in [sending design](docs/design/sending-practice.md).
-Integrated touch-pad replay and feedback listening acceptance remain pending.
+The live `A` capture/decode/replay walkthrough passed on 2026-10-17.
+Unplug/reconnect and broader live feedback acceptance remain open.
 
 ## Saved material and recovery
 

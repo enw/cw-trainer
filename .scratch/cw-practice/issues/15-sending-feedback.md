@@ -4,7 +4,7 @@
 
 **Blocked by:** 14 — Listen/send/replay with verified captured timing.
 
-**Status:** implemented — automated checks and review; integrated hardware acceptance pending
+**Status:** implemented — automated checks and review; live A capture/decode/replay accepted on 2026-10-17; broader live feedback cases remain open
 
 - [x] Decode captured marks/gaps with an explicit sending-speed estimate or setting, independently of the reference's listening/Farnsworth speeds.
 - [x] Display uncertain elements and boundaries as uncertain; distinguish no input, incomplete capture, ambiguous timing and a confident mismatch.
@@ -13,7 +13,7 @@
 - [x] Keep feedback compatible with hidden practice: do not reveal the target before the learner explicitly requests reveal/comparison.
 - [x] Establish documented tolerances and timestamp limitations from the verified hardware capture. Avoid an unexplained accuracy score or claims of grading radio reception.
 - [x] Test known correct attempts, wrong/extra/missing symbols, uncertain gaps, differing speeds, prosigns, and incomplete/disconnected captures; recorded real mark lengths are covered.
-- [ ] Check representative feedback against live touch-pad attempts with the user.
+- [ ] Check broader representative feedback against live touch-pad attempts with the user. The A capture/decode/replay walkthrough passed on 2026-10-17; live word spacing, prosigns and uncertain/mismatched attempts are not yet confirmed.
 
 ## Boundary
 

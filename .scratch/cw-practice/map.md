@@ -53,6 +53,6 @@ completed 09. The separate Vail input path starts with hardware verification.
 Vail sequence: **13 → 14 → 15**. The learner uses capacitive touch pads with
 Iambic B. A cooperative CoreMIDI probe verified their actual USB MIDI marks;
 see [device evidence](../../docs/design/vail-midi-verification.md). Tickets 13/14 now have a native MIDI diagnostic and send-back capture/replay.
-Recorded input, interruption and measured replay tests pass; the integrated
-cooperative hardware walkthrough is in progress. Ticket 15 implements independent-speed tentative decoding, spacing feedback and
-hidden-safe comparison; integrated live feedback acceptance remains pending.
+Recorded input, interruption and measured replay tests pass; the user passed the live A capture/decode/replay walkthrough on 2026-10-17.
+Unplug/reconnect acceptance remains open. Ticket 15 implements independent-speed tentative decoding, spacing feedback and
+hidden-safe comparison; broader live feedback cases remain open after the A test.

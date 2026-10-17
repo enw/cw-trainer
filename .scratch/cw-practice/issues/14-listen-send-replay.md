@@ -4,7 +4,7 @@
 
 **Blocked by:** 13 — Verified Vail MIDI input; 10 — Existing integrated practice app (implemented).
 
-**Status:** implemented — automated capture/session/replay checks passed; cooperative end-to-end hardware check pending
+**Status:** implemented — automated capture/session/replay checks passed; user passed the live A capture/decode/replay walkthrough on 2026-10-17; unplug/reconnect acceptance remains open
 
 - [x] Add an explicit listen/send-back practice mode using existing saved items and exchange lines, without altering the default listening-only workflow.
 - [x] Follow reference playback → ready to send → capture → finish → replay/reference/retry. Provide explicit keyboard controls to begin/end an attempt, retry, navigate and leave; do not guess completion solely from a pause in sending.
@@ -15,7 +15,7 @@
 - [x] Preserve hidden/reveal behavior, reset attempt state on item/line changes, and keep automatic list/line progression from skipping a learner's turn.
 - [x] Handle empty attempts, long attempts, incomplete marks, cancellation and disconnect with bounded capture and an explicit incomplete state; never present a damaged capture as a valid attempt.
 - [x] Use recorded MIDI events to verify replay timing and interruptions.
-- [ ] Demonstrate listen → touch-pad send → replay on the actual adapter with user listening acceptance.
+- [x] Demonstrate listen → touch-pad send → replay on the actual adapter with user listening acceptance.
 
 ## Boundary
 
