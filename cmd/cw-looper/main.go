@@ -36,6 +36,11 @@ func run() error {
 	runner := output.NewRunner(&output.Mac{})
 	defer runner.Close()
 	model = terminal.New(data, runner, store.Save)
+	defer func() {
+		if closeErr := model.CloseMIDI(); closeErr != nil {
+			fmt.Fprintln(os.Stderr, closeErr)
+		}
+	}()
 	_, err = tea.NewProgram(model).Run()
 	if err == nil && model.Unsaved() {
 		return fmt.Errorf("exited with unsaved changes; the last successfully saved library is preserved")

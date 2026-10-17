@@ -14,6 +14,8 @@ func (m *Model) View() tea.View {
 	switch {
 	case m.small():
 		content = "cw-looper\n\nResize the terminal to at least 80 columns × 24 rows.\nPlayback stopped. Selection is preserved.\n\nq quit"
+	case m.midi.open:
+		content = m.midiView()
 	case m.form != nil:
 		content = m.formView()
 	case m.confirm != nil:
@@ -72,7 +74,7 @@ func (m *Model) browseView() string {
 		}
 		fmt.Fprintf(&b, "%s %s\n", marker, clip(rows[i], m.width-4))
 	}
-	b.WriteString("\nj/k select · Enter open · a add · A exchange · e edit · x delete\nJ/K reorder · p settings · i import (Lists) · Esc back · ? help · q quit")
+	b.WriteString("\nj/k select · Enter open · a add · A exchange · e edit · x delete\nJ/K reorder · p settings · m MIDI · i import (Lists)\nEsc back · ? help · q quit")
 	return b.String()
 }
 func (m *Model) practiceView() string {

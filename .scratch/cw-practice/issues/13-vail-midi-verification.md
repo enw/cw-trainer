@@ -4,17 +4,17 @@
 
 **Blocked by:** None — independent hardware integration check; does not depend on 11/12.
 
-**Status:** hardware input verified — app diagnostic and robustness work remain queued
+**Status:** implemented — native MIDI boundary and terminal diagnostic; integrated hardware retest in progress
 
-- [ ] Identify the actual adapter board/firmware where possible and enumerate Mac MIDI endpoints. Distinguish an enumerated endpoint from verified keying events.
-- [ ] Provide a terminal diagnostic that selects the adapter, shows connection state and event timestamps, and offers a deliberate MIDI-mode connection action.
-- [ ] Verify the documented mode switch on this device. Preserve its existing Iambic B keyer, speed and sidetone; do not switch to passthrough or rewrite persistent settings just to test input.
+- [x] Identify the actual adapter board/firmware where possible and enumerate Mac MIDI endpoints. Distinguish an enumerated endpoint from verified keying events.
+- [x] Provide a terminal diagnostic that selects the adapter, shows connection state and event timestamps, and offers a deliberate MIDI-mode connection action.
+- [x] Verify the documented mode switch on this device. Preserve its existing Iambic B keyer, speed and sidetone; do not switch to passthrough or rewrite persistent settings just to test input.
 - [x] With the user touching the pads, capture isolated dits/dahs, held pads, and a squeeze/release. Confirm balanced down/up events and measured mark/gap durations. Record actual observations separately from protocol expectations.
-- [ ] Treat Iambic B output as already-timed marks; do not assume MIDI note numbers identify dits versus dahs in this mode. Account for Note Off and conventional zero-velocity Note On release handling.
+- [x] Treat Iambic B output as already-timed marks; do not assume MIDI note numbers identify dits versus dahs in this mode. Account for Note Off and conventional zero-velocity Note On release handling.
 - [x] Explain that MIDI carries event timing, not microphone audio. The adapter provides live sidetone; hearing its buzzer alone is not proof that the Mac receives events.
-- [ ] Handle missing devices, silent endpoints, disconnect during a mark, reconnect and leaving the diagnostic without stuck input or interference with normal practice.
-- [ ] Document mode ownership and cleanup: explicitly choose the return mode rather than pretending the original mode can be queried/restored. Recheck mode after reconnect and do not rely on it surviving a power cycle.
-- [ ] Establish the smallest tested macOS MIDI input boundary, timestamp source and latency limitations for ticket 14. Use a recorded event fixture for automated checks; require a real-device touch test to complete hardware acceptance.
+- [x] Handle missing devices, silent endpoints, disconnect during a mark, reconnect and leaving the diagnostic without stuck input or interference with normal practice.
+- [x] Document mode ownership and cleanup: explicitly choose the return mode rather than pretending the original mode can be queried/restored. Recheck mode after reconnect and do not rely on it surviving a power cycle.
+- [x] Establish the smallest tested macOS MIDI input boundary, timestamp source and latency limitations for ticket 14. Use a recorded event fixture for automated checks; require a real-device touch test to complete hardware acceptance.
 
 ## Known setup and evidence boundary
 
@@ -29,3 +29,10 @@ currently documents keyboard mode at boot, explicit MIDI-mode selection using
 CC0, and note 0 on/off for onboard-keyer output. The actual device produced notes 1/2 with regular timed repetitions. Support
 that observed behavior; note numbers alone do not establish passthrough. Exact
 firmware and independent keyer-mode identification remain unverified.
+
+## Implementation evidence
+
+Native CoreMIDI boundary, recorded-packet decoding tests, disconnect/close tests,
+and terminal stale-generation tests pass. The app enumerates and connects to
+QT Py M0. Cooperative in-app touch/unplug/reconnect confirmation is pending;
+the earlier standalone hardware event capture is already verified.

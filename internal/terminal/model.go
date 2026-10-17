@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"cw-looper/internal/library"
+	"cw-looper/internal/midi"
 	"cw-looper/internal/output"
 	"cw-looper/internal/session"
 )
@@ -20,6 +21,7 @@ const (
 )
 
 type Model struct {
+	midi                     midiState
 	data                     library.Library
 	runner                   *output.Runner
 	session                  *session.Session
@@ -37,6 +39,7 @@ type Model struct {
 
 func New(data library.Library, runner *output.Runner, save ...func(library.Library) error) *Model {
 	m := &Model{data: data, runner: runner, session: session.New(0), width: 80, height: 24}
+	m.midi.manager = midi.NewManager(midi.Mac{})
 	if len(save) > 0 {
 		m.save = save[0]
 	}
@@ -45,6 +48,8 @@ func New(data library.Library, runner *output.Runner, save ...func(library.Libra
 func (m *Model) Init() tea.Cmd { return nil }
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case midiDevicesMsg, midiConnectedMsg, midiPollMsg, midiTickMsg:
+		return m, m.midiMessage(msg)
 	case progressMsg:
 		if msg.id != m.session.CurrentID() || m.session.Phase != session.CW {
 			return m, nil
@@ -108,6 +113,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if key == "q" || key == "ctrl+c" {
 			return m, m.dispatch(session.Input{Kind: session.Quit})
+		}
+		if m.midi.open {
+			return m, m.midiKey(key)
+		}
+		if key == "m" && m.screen != practice {
+			return m, m.openMIDI()
 		}
 		if m.small() {
 			return m, nil
