@@ -23,4 +23,4 @@ Reuse the skeleton’s loading, saving, playback, and cancellation behavior. Exc
 Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
 [playback architecture](../../../docs/design/playback-architecture.md).
 Design is approved. Skeleton software is implemented, with listening acceptance
-pending. This ticket has not started.
+pending. This ticket is implemented; current verification is in docs/design/complete-verification.md.

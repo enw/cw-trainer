@@ -5,6 +5,7 @@ import (
 	"cw-looper/internal/library"
 	"cw-looper/internal/output"
 	"cw-looper/internal/session"
+	"errors"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -102,5 +103,33 @@ func TestNormalQuitWaitsForPendingSaveAfterStopping(t *testing.T) {
 	_, cmd = m.Update(savedMsg{})
 	if cmd == nil || m.Unsaved() {
 		t.Fatal("successful save did not release quit")
+	}
+}
+
+func TestSaveFailureDuringQuitRetainsRetryAndEmergencyExit(t *testing.T) {
+	for _, force := range []bool{false, true} {
+		m := New(library.Fixture(), output.NewRunner(nil))
+		m.saving = true
+		m.dirty = true
+		m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"})
+		if force {
+			_, cmd := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+			if cmd == nil {
+				t.Fatal("Ctrl+C trapped behind pending save")
+			}
+		} else {
+			_, cmd := m.Update(savedMsg{errors.New("disk full")})
+			if cmd != nil || !m.Unsaved() || m.exitAfterSave {
+				t.Fatal("failed save abandoned edit")
+			}
+			m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"})
+			if m.confirm == nil {
+				t.Fatal("unsaved discard confirmation missing")
+			}
+			_, cmd = m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
+			if cmd == nil {
+				t.Fatal("could not explicitly discard after failed quit")
+			}
+		}
 	}
 }

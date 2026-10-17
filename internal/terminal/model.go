@@ -61,7 +61,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.notice = "Saved"
 		}
 		if m.exitAfterSave {
-			return m, tea.Quit
+			m.exitAfterSave = false
+			if msg.err == nil {
+				return m, tea.Quit
+			}
+			m.session.CancelQuit()
+			return m, m.dispatch(session.Input{Kind: session.Back})
 		}
 		return m, nil
 	case session.Input:
@@ -75,6 +80,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		key := msg.String()
 		if key == "ctrl+c" {
 			m.forceExit = true
+			if m.exitAfterSave {
+				return m, tea.Quit
+			}
 			return m, m.dispatch(session.Input{Kind: session.Quit})
 		}
 		if m.saving {

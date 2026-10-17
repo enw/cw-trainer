@@ -77,6 +77,9 @@ spec found three behavior defects. Their overlapping findings were resolved:
 - A pending save blocks concurrent edits but leaves practice controls responsive.
   Normal exit stops playback then waits for that save; emergency exit reports
   unsaved state. A still-running emergency save retains its OS lock until exit.
+- Follow-up review found two quit/save edge cases. Failed saves now keep edited
+  data available for retry or explicit discard, and Ctrl+C can exit even after
+  normal quit has begun waiting for a save. Both paths have regressions.
 
 ## Remaining human acceptance
 

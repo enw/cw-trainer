@@ -310,3 +310,11 @@ func (s *Session) navigate(now time.Time) []Effect {
 }
 
 func (s *Session) CurrentID() uint64 { return s.id }
+
+// CancelQuit reopens a fully stopped session when a pending save fails. It
+// cannot revoke an in-flight output cleanup or restart playback.
+func (s *Session) CancelQuit() {
+	if s.Phase == Idle {
+		s.quitting = false
+	}
+}
