@@ -4,7 +4,7 @@
 
 **Blocked by:** 00 — Design the terminal workflow and playback architecture; design review completed.
 
-**Status:** draft — design and skeleton must inform feature readiness
+**Status:** claimed — implementation and verification in progress
 
 - [ ] Implement the selected minimal stack and document actual install/run/test commands; use real Mac audio, built-in speech, and durable local storage rather than mocked integrations for the demo.
 - [ ] Load a minimal saved exchange containing KE2ISH and a second station. Preserve line order, station roles, and explicit spoken phrases in the round-tripped model.
@@ -25,6 +25,5 @@ This is a narrow end-to-end implementation, not disposable scaffolding. Fixed se
 
 Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
 [playback architecture](../../../docs/design/playback-architecture.md).
-Design is authored but awaits user review and skeleton validation; this ticket
-has not started.
+User approved the design and authorized this slice. Skeleton validation is in progress.
 The [skeleton fixture and acceptance script](../../../docs/design/skeleton-acceptance.md) define the narrow demo and real Mac checks.
