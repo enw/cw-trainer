@@ -15,7 +15,18 @@ func (s *Session) isExchange() bool {
 }
 func (s *Session) advanceUnit() {
 	if s.isExchange() {
-		return
+		if s.Settings.LineAdvancement == "manual" {
+			return
+		}
+		if s.Line+1 < s.lines {
+			s.Line++
+			s.Count = 0
+			s.Revealed = false
+			return
+		}
+		s.Line = 0
+		s.Count = 0
+		s.Revealed = false
 	}
 	s.advanceEntry()
 }

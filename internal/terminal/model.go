@@ -110,7 +110,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.screen == practice {
 			return m, m.practiceKey(key)
 		}
-		if key == "a" || key == "e" || key == "x" || key == "J" || key == "K" {
+		if key == "a" || key == "A" || key == "e" || key == "x" || key == "J" || key == "K" {
 			return m, m.editKey(key)
 		}
 		m.browseKey(key)

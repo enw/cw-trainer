@@ -9,8 +9,8 @@ import (
 
 func (m *Model) settingsForm() tea.Cmd {
 	config := m.data.Lists[m.list].Settings
-	labels := []string{"Character WPM", "Overall WPM", "Your tone Hz", "Other tone Hz", "Pause seconds", "Display: whole / highlight / hidden", "Playback: cw / sandwich / occasional", "Speech every N completed CW", "Sequence: repeat / cycle / shuffle"}
-	values := []string{fmt.Sprint(config.CharacterWPM), fmt.Sprint(config.OverallWPM), fmt.Sprint(config.LearnerHz), fmt.Sprint(config.OtherHz), fmt.Sprint(config.PauseSeconds), config.Display, config.Style, fmt.Sprint(config.SpeechInterval), config.Sequence}
+	labels := []string{"Character WPM", "Overall WPM", "Your tone Hz", "Other tone Hz", "Pause seconds", "Display: whole / highlight / hidden", "Playback: cw / sandwich / occasional", "Speech every N completed CW", "Sequence: repeat / cycle / shuffle", "Exchange lines: manual / automatic"}
+	values := []string{fmt.Sprint(config.CharacterWPM), fmt.Sprint(config.OverallWPM), fmt.Sprint(config.LearnerHz), fmt.Sprint(config.OtherHz), fmt.Sprint(config.PauseSeconds), config.Display, config.Style, fmt.Sprint(config.SpeechInterval), config.Sequence, config.LineAdvancement}
 	return m.openForm("List settings · apply on save; speed/tone at next CW", labels, values, func(v []string) (library.Library, error) {
 		data := clone(m.data)
 		c := &data.Lists[m.list].Settings
@@ -30,6 +30,7 @@ func (m *Model) settingsForm() tea.Cmd {
 		}
 		c.SpeechInterval = interval
 		c.Sequence = v[8]
+		c.LineAdvancement = v[9]
 		return data, c.Validate()
 	})
 }

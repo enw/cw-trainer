@@ -68,7 +68,7 @@ func (m *Model) browseView() string {
 		}
 		fmt.Fprintf(&b, "%s %s\n", marker, clip(rows[i], m.width-4))
 	}
-	b.WriteString("\nj/k select · Enter open · a add · e edit · x delete · J/K reorder\nEsc/h back · ? help · q quit")
+	b.WriteString("\nj/k select · Enter open · a item/line · A exchange · e edit · x delete · J/K reorder\nEsc/h back · ? help · q quit")
 	return b.String()
 }
 func (m *Model) practiceView() string {
@@ -108,8 +108,14 @@ func (m *Model) practiceView() string {
 		status = wrap(m.session.Err.Error(), m.width-6) + "\nEnter retries · restart app if indicated"
 	}
 	boundary := ""
+	if m.data.Lists[m.list].Entries[m.entry].Kind == "exchange" {
+		boundary = "Automatic lines: ordered progression\n"
+		if m.session.Settings.LineAdvancement == "manual" {
+			boundary = "Manual lines: press Next\n"
+		}
+	}
 	if m.session.Line == len(m.currentLines())-1 {
-		boundary = "Last line · ] next item or Esc library\n"
+		boundary += "Last line · ] next item or Esc library\n"
 	}
 	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %.0f Hz\n\n%s\n\n%s · Completed: %d\n%g character / %g overall WPM · Pause %g s\n%s · %s · %s\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · R reveal · p settings · Esc library · ? help · q quit",
 		clip(title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, config.CharacterWPM, config.OverallWPM, m.session.Settings.PauseSeconds, m.session.Settings.Display, m.session.Settings.Style, m.session.Settings.Sequence, boundary)

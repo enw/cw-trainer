@@ -133,7 +133,16 @@ func (m *Model) editKey(key string) tea.Cmd {
 		if key == "e" {
 			return m.lineForm(false)
 		}
-		return nil
+		if key == "a" {
+			return m.lineForm(true)
+		}
+		if key == "x" && m.count() == 1 {
+			m.notice = "An exchange needs at least one line; delete the exchange from its list instead"
+			return nil
+		}
+	}
+	if m.screen == entries && (key == "A" || key == "e" && m.count() > 0 && m.data.Lists[m.list].Entries[m.cursor].Kind == "exchange") {
+		return m.exchangeForm(key == "A")
 	}
 	if key == "J" || key == "K" {
 		return m.reorder(key)
@@ -143,6 +152,9 @@ func (m *Model) editKey(key string) tea.Cmd {
 			data := clone(m.data)
 			if m.screen == lists {
 				data.Lists = append(data.Lists[:m.cursor], data.Lists[m.cursor+1:]...)
+			} else if m.screen == lines {
+				e := &data.Lists[m.list].Entries[m.entry]
+				e.Lines = append(e.Lines[:m.cursor], e.Lines[m.cursor+1:]...)
 			} else {
 				e := data.Lists[m.list].Entries
 				data.Lists[m.list].Entries = append(e[:m.cursor], e[m.cursor+1:]...)
@@ -175,10 +187,7 @@ func (m *Model) editKey(key string) tea.Cmd {
 			return data, nil
 		})
 	}
-	if key == "e" && m.data.Lists[m.list].Entries[m.cursor].Kind != "item" {
-		m.notice = "Exchange editing arrives in its dependent slice"
-		return nil
-	}
+
 	value, spoken := "", ""
 	if key == "e" {
 		line := m.data.Lists[m.list].Entries[m.cursor].Lines[0]
@@ -210,6 +219,9 @@ func (m *Model) reorder(key string) tea.Cmd {
 	data := clone(m.data)
 	if m.screen == lists {
 		data.Lists[m.cursor], data.Lists[target] = data.Lists[target], data.Lists[m.cursor]
+	} else if m.screen == lines {
+		e := data.Lists[m.list].Entries[m.entry].Lines
+		e[m.cursor], e[target] = e[target], e[m.cursor]
 	} else {
 		e := data.Lists[m.list].Entries
 		e[m.cursor], e[target] = e[target], e[m.cursor]
