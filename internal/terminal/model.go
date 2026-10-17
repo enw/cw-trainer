@@ -21,6 +21,9 @@ const (
 )
 
 type Model struct {
+	feedbackOpen             bool
+	feedbackScroll           int
+	sendWPM                  float64
 	midi                     midiState
 	data                     library.Library
 	runner                   *output.Runner
@@ -38,7 +41,7 @@ type Model struct {
 }
 
 func New(data library.Library, runner *output.Runner, save ...func(library.Library) error) *Model {
-	m := &Model{data: data, runner: runner, session: session.New(0), width: 80, height: 24}
+	m := &Model{sendWPM: 15, data: data, runner: runner, session: session.New(0), width: 80, height: 24}
 	m.midi.manager = midi.NewManager(midi.Mac{})
 	if len(save) > 0 {
 		m.save = save[0]
@@ -122,6 +125,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.small() {
 			return m, nil
+		}
+		if m.feedbackOpen && m.screen == practice && m.session.SendBack {
+			return m, m.feedbackKey(key)
 		}
 		if key == "p" && m.screen != lists {
 			return m, m.settingsForm()

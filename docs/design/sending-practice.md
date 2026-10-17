@@ -46,3 +46,28 @@ portion. Navigation clears the attempt. Back/quit stop output before returning.
 
 Ticket 15's decoding/feedback remains a separate dependent slice. No microphone,
 radio output, persistent recording, or automatic grading is added here.
+
+## Sending feedback (ticket 15)
+
+After capture, show a tentative decode, timing ranges and a comparison. f opens
+full feedback with j/k scrolling; Esc closes it. Long attempts remain inspectable. Sending
+WPM is session-local, initially 15, adjusted with -/+ (5–60); it is independent
+of listening/Farnsworth settings and does not reconfigure the adapter. Recompute
+feedback from the original marks when adjusted. No expected text enters decoding.
+
+Classify durations in units of 1200 / sending WPM milliseconds. Accept dits and
+intra-element gaps at 0.65–1.35 units, dahs and character gaps at 2.4–3.6, word
+gaps at 5.6–8.4. All other durations are uncertain, not rounded to a nearest
+category. These deliberately conservative heuristic windows include the verified
+80/240 ms adapter output at 15 WPM; they are not calibrated accuracy guarantees.
+Unknown elements use ?, ambiguous boundaries use [gap?]. Continuous patterns may
+have multiple letter/punctuation/prosign meanings: display alternatives and
+compare code groups and word boundaries, not a guessed semantic label.
+
+Comparison reports matching patterns, definite mismatch, or uncertain timing;
+no input and incomplete captures are separate states. Hidden practice may show
+one's own sending but suppresses target comparison until R reveal. Timing ranges
+show element, character and word gaps in dit units; ambiguous gaps are identified.
+The adapter generates element lengths; feedback does not grade raw paddle touch,
+radio reception or an accuracy percentage. USB timestamp and human hardware
+acceptance limitations from tickets 13/14 remain explicit.

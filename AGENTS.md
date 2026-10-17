@@ -44,7 +44,7 @@ Read the relevant `SKILL.md` when invoking a stage:
   report completion or stopped events. Preserve the cancellation barrier and IDs.
 - `docs/design/complete-verification.md` records current evidence and outstanding
   listening acceptance; the skeleton record is historical. Do not treat software cleanup timings as acoustic verification.
-- Tickets 00–10 are implemented. Tickets 13–14 implement Vail MIDI and send-back practice; integrated human acceptance is pending. Tickets 11, 12 and 15 remain queued.
+- Tickets 00–10 are implemented. Tickets 13–15 implement Vail MIDI, send-back practice and tentative feedback; integrated human acceptance is pending. Tickets 11 and 12 remain queued.
 
 ## Agent skills
 

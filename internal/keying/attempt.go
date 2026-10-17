@@ -1,11 +1,14 @@
-// Package keying captures measured marks and spaces without decoding them.
+// Package keying captures and interprets measured Morse marks and spaces.
 package keying
 
 import (
 	"cw-looper/internal/morse"
+	"errors"
 	"fmt"
 	"time"
 )
+
+var ErrNoInput = errors.New("No keying received; retry")
 
 const MaxDuration = 2 * time.Minute
 const MaxMarks = 1024
@@ -82,7 +85,7 @@ func (a *Attempt) Finish() error {
 	if a.down {
 		a.Invalidate("Attempt ended while key was down; release pads and retry")
 	} else if len(a.Marks) == 0 {
-		a.Invalidate("No keying received; retry")
+		a.Err = ErrNoInput
 	}
 	a.complete = a.Err == nil
 	return a.Err

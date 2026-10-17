@@ -4,18 +4,19 @@
 
 **Blocked by:** 14 — Listen/send/replay with verified captured timing.
 
-**Status:** draft — queued follow-up; implementation not requested
+**Status:** implemented — automated checks and review; integrated hardware acceptance pending
 
-- [ ] Decode captured marks/gaps with an explicit sending-speed estimate or setting, independently of the reference's listening/Farnsworth speeds.
-- [ ] Display uncertain elements and boundaries as uncertain; distinguish no input, incomplete capture, ambiguous timing and a confident mismatch.
-- [ ] Compare the attempt with the current item/line, including continuous prosigns and word boundaries, without silently filling missing input from the expected answer.
-- [ ] Offer practical timing information, especially character and word spacing, with replay of the attempt and reference. Explain that onboard Iambic B generates element lengths; those lengths do not measure the learner's raw paddle-contact timing.
-- [ ] Keep feedback compatible with hidden practice: do not reveal the target before the learner explicitly requests reveal/comparison.
-- [ ] Establish documented tolerances and timestamp limitations from the verified hardware capture. Avoid an unexplained accuracy score or claims of grading radio reception.
-- [ ] Test known correct attempts, wrong/extra/missing symbols, uncertain gaps, differing speeds, prosigns, and incomplete/disconnected captures; check representative feedback against real touch-pad attempts.
+- [x] Decode captured marks/gaps with an explicit sending-speed estimate or setting, independently of the reference's listening/Farnsworth speeds.
+- [x] Display uncertain elements and boundaries as uncertain; distinguish no input, incomplete capture, ambiguous timing and a confident mismatch.
+- [x] Compare the attempt with the current item/line, including continuous prosigns and word boundaries, without silently filling missing input from the expected answer.
+- [x] Offer practical timing information, especially character and word spacing, with replay of the attempt and reference. Explain that onboard Iambic B generates element lengths; those lengths do not measure the learner's raw paddle-contact timing.
+- [x] Keep feedback compatible with hidden practice: do not reveal the target before the learner explicitly requests reveal/comparison.
+- [x] Establish documented tolerances and timestamp limitations from the verified hardware capture. Avoid an unexplained accuracy score or claims of grading radio reception.
+- [x] Test known correct attempts, wrong/extra/missing symbols, uncertain gaps, differing speeds, prosigns, and incomplete/disconnected captures; recorded real mark lengths are covered.
+- [ ] Check representative feedback against live touch-pad attempts with the user.
 
 ## Boundary
 
-Exact feedback presentation and tolerance choices need design review before
-implementation. Adaptive curricula, persistent performance analytics and
+Feedback presentation and tolerances were reviewed before implementation; see
+[design](../../../docs/design/sending-practice.md). Adaptive curricula, persistent performance analytics and
 simulated signal-quality grading are outside this slice.

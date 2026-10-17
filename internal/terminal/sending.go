@@ -23,6 +23,7 @@ func (m *Model) startSending() tea.Cmd {
 	} else if m.screen != lines || m.count() == 0 {
 		return nil
 	}
+	m.feedbackOpen = false
 	m.preparePractice()
 	m.session.SendBack = true
 	return m.dispatch(session.Input{Kind: session.Start})
@@ -32,6 +33,18 @@ func (m *Model) sendingKey(key string) (tea.Cmd, bool) {
 		return nil, false
 	}
 	switch key {
+	case "f":
+		if m.session.Phase == session.Captured || m.session.Phase == session.Replay {
+			m.feedbackOpen = true
+			m.feedbackScroll = 0
+		}
+		return nil, true
+	case "-":
+		m.sendWPM = max(5, m.sendWPM-1)
+		return nil, true
+	case "+", "=":
+		m.sendWPM = min(60, m.sendWPM+1)
+		return nil, true
 	case "enter":
 		if m.session.Phase == session.Capturing {
 			return m.dispatch(session.Input{Kind: session.FinishCapture, At: midi.HostTime()}), true
@@ -58,6 +71,9 @@ func (m *Model) sendingKey(key string) (tea.Cmd, bool) {
 	return nil, false
 }
 func (m *Model) sendingView() string {
+	if m.feedbackOpen {
+		return m.feedbackView()
+	}
 	s := m.session
 	title := "Send-back practice"
 	text := m.currentLines()[s.Line].CW
@@ -88,7 +104,7 @@ func (m *Model) sendingView() string {
 	if !m.midi.connected {
 		connection = "Disconnected · Esc then m to reconnect"
 	}
-	return fmt.Sprintf("%s · Line %d of %d\nMIDI: %s\n\n%s\n\n%s\nCaptured marks: %d\n\n%s\nLive sidetone comes from the adapter. Replay preserves your timing.\n\nn retry reference · Space pause · R reveal · s speak\nh/l previous/next · [/] item · p settings\nEsc library · ? help · q quit", title, s.Line+1, len(m.currentLines()), clip(connection, 65), wrap(text, min(m.width-6, 100)), status, len(s.Attempt.Marks), instruction)
+	return fmt.Sprintf("%s · Line %d of %d\nMIDI: %s\n\n%s\n\n%s\nCaptured marks: %d\n%s\n%s\nAdapter generates element lengths; gaps reflect your spacing.\nn retry reference · Space pause · R reveal · s speak\nh/l previous/next · [/] item · p settings\nEsc library · ? help · q quit", title, s.Line+1, len(m.currentLines()), clip(connection, 65), wrap(text, min(m.width-6, 100)), status, len(s.Attempt.Marks), m.sendingFeedback(), instruction)
 }
 func (m *Model) midiEvent(event midi.Event) tea.Cmd {
 	return m.dispatch(session.Input{Kind: session.KeyEvent, Event: event})
@@ -96,4 +112,21 @@ func (m *Model) midiEvent(event midi.Event) tea.Cmd {
 func (m *Model) midiLost(err error) tea.Cmd {
 	m.notice = err.Error()
 	return m.dispatch(session.Input{Kind: session.InputLost, Err: err})
+}
+
+func (m *Model) sendingFeedback() string {
+	s := m.session
+	heading := fmt.Sprintf("Sending %.0f WPM · -/+ adjust · f full feedback", m.sendWPM)
+	if s.Phase != session.Captured && s.Phase != session.Replay {
+		return heading
+	}
+	f := s.Attempt.Feedback(m.sendWPM)
+	if f.Text == "" {
+		return heading + "\n" + f.Status
+	}
+	comparison := "R reveals target and comparison"
+	if s.Settings.Display != "hidden" || s.Revealed {
+		comparison = f.Compare(m.currentLines()[s.Line].CW)
+	}
+	return heading + "\n" + f.Status + ": " + clip(f.Text, max(20, m.width-30)) + "\n" + wrap(f.Timing, max(20, m.width-4)) + "\n" + comparison
 }

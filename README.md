@@ -120,7 +120,15 @@ The app captures MIDI timings, not microphone audio, and generates no duplicate
 live sidetone. Hardware sending speed remains independent of reference WPM.
 The [hardware record](docs/design/vail-midi-verification.md) describes the tested
 QT Py M0 adapter's note-1/2 behavior; note-0 timed firmware is supported too.
-Decoding and graded feedback are a later slice.
+After capture, tentative decoding and gap ranges appear automatically. **- / +**
+sets the sending speed used for interpretation (initially 15 WPM, range 5–60),
+independently of listening settings; it does not change adapter speed. **f** opens
+full feedback with **j/k** scrolling. Hidden practice waits for **R** before
+showing the target or comparison. Unknown marks and ambiguous gaps stay uncertain;
+prosign aliases such as `<AR>/+` share one continuous pattern. There is no accuracy
+score. The adapter generates element lengths; your spacing is the useful manual
+signal. Tolerances are documented in [sending design](docs/design/sending-practice.md).
+Integrated touch-pad replay and feedback listening acceptance remain pending.
 
 ## Saved material and recovery
 

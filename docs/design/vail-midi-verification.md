@@ -54,14 +54,13 @@ numbers or assume note 0 is the only valid timed output. Integration must use
 observed down/up timing and explicitly support the tested device behavior.
 The squeeze trace alone does not independently distinguish Iambic A from B.
 
-## Remaining work
+## Integrated implementation and remaining acceptance
 
-Ticket 13 still owns an app-accessible diagnostic, endpoint selection,
-connection state, disconnect/reconnect behavior, incomplete-event handling,
-recorded-fixture tests and explicit mode cleanup. The temporary Swift probes
-were used from `/tmp`; they are not installed features or repository source.
-
-Ticket 14 can build on the proven hardware path once that boundary is in place:
-reference playback, capture marks/gaps, then synthesize a replay. The adapter
-continues to provide immediate local sidetone. No sending exercise, decode,
-score or timing feedback has yet been implemented in cw-looper.
+Tickets 13–15 now provide a native MIDI diagnostic, reference/capture/replay,
+and tentative decoding with spacing feedback. Automated checks cover recorded
+mark lengths, event handling, capture interruption, replay timing, independent
+sending speed, uncertainty, prosigns and hidden-target comparison. The app has
+enumerated and connected to QT Py M0 and played a reference. These checks do not
+replace the remaining cooperative in-app touch/unplug/reconnect and replay/
+feedback listening walkthrough. The temporary standalone Swift probes were used
+from `/tmp`; they are not installed features or repository source.
