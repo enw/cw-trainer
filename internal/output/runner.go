@@ -92,7 +92,7 @@ func (r *Runner) Execute(effect session.Effect, line library.Line) <-chan sessio
 				err = r.backend.CW(ctx, line.CW, hz, config.CharacterWPM, config.OverallWPM)
 			}
 		case session.PlaySpeech:
-			err = r.backend.Speech(ctx, line.Spoken)
+			err = r.backend.Speech(ctx, library.Spoken(line))
 		case session.Wait:
 			timer := time.NewTimer(effect.Duration)
 			select {

@@ -109,7 +109,7 @@ func (l Library) Validate() error {
 				if _, err := morse.Compile(line.CW, 20, 15, false); err != nil {
 					return err
 				}
-				if !plain(line.Spoken, 1024) {
+				if line.Spoken != "" && !plain(line.Spoken, 1024) {
 					return fmt.Errorf("spoken phrase must contain 1–1024 plain characters")
 				}
 			}

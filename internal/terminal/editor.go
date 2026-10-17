@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 )
 
 type form struct {
@@ -81,11 +82,12 @@ func (m *Model) formKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 		m.form = nil
 		m.data = data
+		var playback tea.Cmd
 		if m.screen == practice {
-			m.session.Settings = m.data.Lists[m.list].Settings
+			playback = m.applyEffects(m.session.Configure(m.data.Lists[m.list].Settings, time.Now()))
 		}
 		m.dirty = true
-		return m.persist()
+		return tea.Batch(playback, m.persist())
 	}
 	var cmd tea.Cmd
 	f.fields[f.focus], cmd = f.fields[f.focus].Update(msg)
@@ -128,6 +130,9 @@ func (m *Model) confirmKey(key string) tea.Cmd {
 }
 func (m *Model) editKey(key string) tea.Cmd {
 	if m.screen == lines {
+		if key == "e" {
+			return m.lineForm(false)
+		}
 		return nil
 	}
 	if key == "J" || key == "K" {
@@ -174,20 +179,22 @@ func (m *Model) editKey(key string) tea.Cmd {
 		m.notice = "Exchange editing arrives in its dependent slice"
 		return nil
 	}
-	value := ""
+	value, spoken := "", ""
 	if key == "e" {
-		value = m.data.Lists[m.list].Entries[m.cursor].Lines[0].CW
+		line := m.data.Lists[m.list].Entries[m.cursor].Lines[0]
+		value, spoken = line.CW, line.Spoken
 	}
-	return m.openForm("Practice item", []string{"CW text"}, []string{value}, func(v []string) (library.Library, error) {
+	return m.openForm("Practice item · custom speech survives CW edits; review it", []string{"CW text", "Spoken override (clear to use generated speech)"}, []string{value, spoken}, func(v []string) (library.Library, error) {
 		data := clone(m.data)
 		text := strings.ToUpper(strings.TrimSpace(v[0]))
-		e := library.Entry{ID: id(), Kind: "item", Title: text, Lines: []library.Line{{ID: id(), Station: "learner", CW: text, Spoken: text}}}
+		e := library.Entry{ID: id(), Kind: "item", Title: text, Lines: []library.Line{{ID: id(), Station: "learner", CW: text, Spoken: v[1]}}}
 		if key == "a" {
 			data.Lists[m.list].Entries = append(data.Lists[m.list].Entries, e)
 		} else {
 			old := &data.Lists[m.list].Entries[m.cursor]
 			old.Title = text
 			old.Lines[0].CW = text
+			old.Lines[0].Spoken = v[1]
 		}
 		return data, nil
 	})

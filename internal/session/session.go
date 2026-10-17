@@ -61,6 +61,11 @@ type Effect struct {
 }
 
 type Session struct {
+	portion                  int
+	unitInterval             int
+	afterGap                 Phase
+	unitComplete             bool
+	onDemand                 bool
 	Revealed                 bool
 	Sample                   int64
 	Settings, ActiveSettings library.Settings
@@ -110,6 +115,7 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 			return nil
 		}
 		s.Err = nil
+		s.resetUnit()
 		s.Count = 0
 		s.resume = CW
 		return s.transition(CW, now)
@@ -144,6 +150,8 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 			return nil
 		}
 		s.speechReturnsPaused = s.wantsPause()
+		s.resetUnit()
+		s.onDemand = true
 		s.Count = 0
 		s.resume = CW
 		return s.transition(Speech, now)
@@ -170,6 +178,9 @@ func (s *Session) begin(target Phase, now time.Time) []Effect {
 	var kind EffectKind
 	switch target {
 	case CW:
+		if s.unitInterval == 0 {
+			s.unitInterval = s.Settings.SpeechInterval
+		}
 		s.Sample = -1
 		kind = PlayCW
 		s.ActiveSettings = s.Settings
@@ -202,21 +213,26 @@ func (s *Session) outputEvent(in Input, now time.Time) []Effect {
 		s.Err = in.Err
 		return nil
 	}
-	switch s.Phase {
-	case CW:
-		s.Count++
-	case Speech:
-		if s.speechReturnsPaused {
-			s.speechReturnsPaused = false
-			s.resume = CW
-			return s.begin(Paused, now)
+	if s.Phase == Gap {
+		if s.unitComplete {
+			s.finishUnit()
 		}
-	case Gap:
-		return s.begin(CW, now)
+		return s.begin(s.afterGap, now)
 	}
+	if s.Phase == CW {
+		s.Count++
+	}
+	if s.Phase == Speech && s.speechReturnsPaused {
+		s.speechReturnsPaused = false
+		s.resetUnit()
+		s.resume = CW
+		return s.begin(Paused, now)
+	}
+	s.completePortion()
 	s.gapRemaining = time.Duration(s.Settings.PauseSeconds * float64(time.Second))
 	return s.begin(Gap, now)
 }
+
 func (s *Session) pause(now time.Time) []Effect {
 	if s.Phase == Idle || s.Phase == Failed {
 		return nil
@@ -256,6 +272,7 @@ func (s *Session) SelectEntries(lengths []int, entry, index int) {
 		s.lines = lengths[s.Entry]
 	}
 	s.Line = min(max(index, 0), max(0, s.lines-1))
+	s.resetUnit()
 	s.Count = 0
 	s.Err = nil
 	s.Phase = Idle
@@ -271,6 +288,7 @@ func (s *Session) navigate(now time.Time) []Effect {
 	s.Revealed = false
 	s.Sample = -1
 	paused := s.wantsPause()
+	s.resetUnit()
 	s.Count = 0
 	s.resume = CW
 	s.speechReturnsPaused = false

@@ -123,7 +123,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) small() bool                  { return m.width < 80 || m.height < 24 }
 func (m *Model) currentLines() []library.Line { return m.data.Lists[m.list].Entries[m.entry].Lines }
 func (m *Model) dispatch(in session.Input) tea.Cmd {
-	effects := m.session.Update(in, time.Now())
+	return m.applyEffects(m.session.Update(in, time.Now()))
+}
+func (m *Model) applyEffects(effects []session.Effect) tea.Cmd {
 	if m.screen == practice {
 		m.entry = m.session.Entry
 	}
