@@ -68,7 +68,7 @@ func TestRenderedPCM(t *testing.T) {
 }
 
 func TestEncodingValidationAndGaps(t *testing.T) {
-	for _, text := range []string{"", "CQ <AR>", "CQ!", "é", "A\tB"} {
+	for _, text := range []string{"", "CQ <XX>", "CQ!", "é", "A\tB"} {
 		if _, err := morse.Compile(text, 20, 15, false); err == nil {
 			t.Fatalf("accepted %q", text)
 		}
@@ -83,5 +83,26 @@ func TestEncodingValidationAndGaps(t *testing.T) {
 	timeline, _ = morse.Compile("E T", 20, 15, false)
 	if timeline.Segments[1].End-timeline.Segments[1].Start != 37844 {
 		t.Fatal("wrong Farnsworth word gap")
+	}
+}
+
+func TestProsignIsContinuousAndDistinctFromLetters(t *testing.T) {
+	joined, err := morse.Compile("<AR>", 20, 15, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if joined.Samples != 37440 {
+		t.Fatalf("AR joined should be 780 ms, got %d samples", joined.Samples)
+	}
+	letters, _ := morse.Compile("AR", 20, 15, false)
+	if letters.Samples <= joined.Samples {
+		t.Fatal("ordinary letters lost spacing")
+	}
+	mixed, err := morse.Compile("CQ DE KE2ISH <AR>", 20, 15, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(mixed.Markers) != 11 {
+		t.Fatalf("prosign not a single display token: %d", len(mixed.Markers))
 	}
 }

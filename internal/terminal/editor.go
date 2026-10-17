@@ -5,12 +5,15 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"crypto/rand"
 	"cw-looper/internal/library"
+	"cw-looper/internal/morse"
 	"encoding/json"
 	"fmt"
 	"strings"
 )
 
 type form struct {
+	picker bool
+	pick   int
 	title  string
 	labels []string
 	fields []textinput.Model
@@ -44,6 +47,13 @@ func (m *Model) openForm(title string, labels, values []string, apply func([]str
 }
 func (m *Model) formKey(msg tea.KeyPressMsg) tea.Cmd {
 	f := m.form
+	if f.picker {
+		return m.pickerKey(msg.String())
+	}
+	if msg.String() == "ctrl+p" && strings.Contains(f.labels[f.focus], "CW") {
+		f.picker = true
+		return nil
+	}
 	switch msg.String() {
 	case "esc":
 		m.form = nil
@@ -83,12 +93,15 @@ func (m *Model) formKey(msg tea.KeyPressMsg) tea.Cmd {
 }
 func (m *Model) formView() string {
 	f := m.form
+	if f.picker {
+		return m.pickerView()
+	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s\n\n", f.title)
 	for i, label := range f.labels {
 		fmt.Fprintf(&b, "%s\n%s\n\n", label, f.fields[i].View())
 	}
-	b.WriteString("Tab next field · Ctrl+S save · Esc cancel")
+	b.WriteString("Tab next field · Ctrl+P prosigns · Ctrl+S save · Esc cancel")
 	return b.String()
 }
 func (m *Model) persist() tea.Cmd {
@@ -196,4 +209,38 @@ func (m *Model) reorder(key string) tea.Cmd {
 	m.cursor = target
 	m.dirty = true
 	return m.persist()
+}
+
+func (m *Model) pickerKey(key string) tea.Cmd {
+	f := m.form
+	switch key {
+	case "esc":
+		f.picker = false
+	case "j", "down":
+		f.pick = (f.pick + 1) % len(morse.Prosigns)
+	case "k", "up":
+		f.pick = (f.pick + len(morse.Prosigns) - 1) % len(morse.Prosigns)
+	case "enter":
+		input := &f.fields[f.focus]
+		text := []rune(input.Value())
+		pos := input.Position()
+		token := morse.Prosigns[f.pick].Token
+		input.SetValue(string(text[:pos]) + token + string(text[pos:]))
+		input.SetCursor(pos + len(token))
+		f.picker = false
+	}
+	return nil
+}
+func (m *Model) pickerView() string {
+	var b strings.Builder
+	b.WriteString("Prosigns · sent continuously\n\n")
+	for i, p := range morse.Prosigns {
+		mark := " "
+		if i == m.form.pick {
+			mark = ">"
+		}
+		fmt.Fprintf(&b, "%s %s — %s\n", mark, p.Token, p.Meaning)
+	}
+	b.WriteString("\nEnter inserts · j/k moves · Esc cancels")
+	return b.String()
 }
