@@ -1,0 +1,196 @@
+package terminal
+
+import (
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"crypto/rand"
+	"cw-looper/internal/library"
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
+type form struct {
+	title  string
+	labels []string
+	fields []textinput.Model
+	focus  int
+	apply  func([]string) (library.Library, error)
+}
+type confirmation struct {
+	prompt string
+	yes    func() tea.Cmd
+}
+type savedMsg struct{ err error }
+
+func clone(data library.Library) library.Library {
+	encoded, _ := json.Marshal(data)
+	var copy library.Library
+	_ = json.Unmarshal(encoded, &copy)
+	return copy
+}
+func id() string { return fmt.Sprintf("%x", rand.Text()) }
+func (m *Model) openForm(title string, labels, values []string, apply func([]string) (library.Library, error)) tea.Cmd {
+	f := &form{title: title, labels: labels, apply: apply}
+	for _, v := range values {
+		input := textinput.New()
+		input.SetValue(v)
+		input.CharLimit = 1024
+		input.SetWidth(64)
+		f.fields = append(f.fields, input)
+	}
+	m.form = f
+	return f.fields[0].Focus()
+}
+func (m *Model) formKey(msg tea.KeyPressMsg) tea.Cmd {
+	f := m.form
+	switch msg.String() {
+	case "esc":
+		m.form = nil
+		return nil
+	case "tab", "shift+tab":
+		f.fields[f.focus].Blur()
+		step := 1
+		if msg.String() == "shift+tab" {
+			step = -1
+		}
+		f.focus = (f.focus + step + len(f.fields)) % len(f.fields)
+		return f.fields[f.focus].Focus()
+	case "ctrl+s":
+		values := make([]string, len(f.fields))
+		for i := range f.fields {
+			values[i] = f.fields[i].Value()
+		}
+		data, err := f.apply(values)
+		if err == nil {
+			err = data.Validate()
+		}
+		if err != nil {
+			m.notice = err.Error()
+			return nil
+		}
+		m.form = nil
+		m.data = data
+		m.dirty = true
+		return m.persist()
+	}
+	var cmd tea.Cmd
+	f.fields[f.focus], cmd = f.fields[f.focus].Update(msg)
+	return cmd
+}
+func (m *Model) formView() string {
+	f := m.form
+	var b strings.Builder
+	fmt.Fprintf(&b, "%s\n\n", f.title)
+	for i, label := range f.labels {
+		fmt.Fprintf(&b, "%s\n%s\n\n", label, f.fields[i].View())
+	}
+	b.WriteString("Tab next field · Ctrl+S save · Esc cancel")
+	return b.String()
+}
+func (m *Model) persist() tea.Cmd {
+	if m.save == nil {
+		m.dirty = false
+		return func() tea.Msg { return savedMsg{} }
+	}
+	m.saving = true
+	data := clone(m.data)
+	return func() tea.Msg { return savedMsg{m.save(data)} }
+}
+func (m *Model) confirmKey(key string) tea.Cmd {
+	if key == "y" {
+		action := m.confirm.yes
+		m.confirm = nil
+		return action()
+	}
+	if key == "esc" || key == "n" {
+		m.confirm = nil
+	}
+	return nil
+}
+func (m *Model) editKey(key string) tea.Cmd {
+	if m.screen == lines {
+		return nil
+	}
+	if key == "J" || key == "K" {
+		return m.reorder(key)
+	}
+	if key == "x" && m.count() > 0 {
+		m.confirm = &confirmation{"Delete selected entry?", func() tea.Cmd {
+			data := clone(m.data)
+			if m.screen == lists {
+				data.Lists = append(data.Lists[:m.cursor], data.Lists[m.cursor+1:]...)
+			} else {
+				e := data.Lists[m.list].Entries
+				data.Lists[m.list].Entries = append(e[:m.cursor], e[m.cursor+1:]...)
+			}
+			m.data = data
+			m.cursor = min(m.cursor, max(0, m.count()-1))
+			m.dirty = true
+			return m.persist()
+		}}
+		return nil
+	}
+	if key != "a" && key != "e" {
+		return nil
+	}
+	if key == "e" && m.count() == 0 {
+		return nil
+	}
+	if m.screen == lists {
+		value := ""
+		if key == "e" {
+			value = m.data.Lists[m.cursor].Name
+		}
+		return m.openForm("List", []string{"Name"}, []string{value}, func(v []string) (library.Library, error) {
+			data := clone(m.data)
+			if key == "a" {
+				data.Lists = append(data.Lists, library.List{ID: id(), Name: v[0], Settings: library.Defaults()})
+			} else {
+				data.Lists[m.cursor].Name = v[0]
+			}
+			return data, nil
+		})
+	}
+	if key == "e" && m.data.Lists[m.list].Entries[m.cursor].Kind != "item" {
+		m.notice = "Exchange editing arrives in its dependent slice"
+		return nil
+	}
+	value := ""
+	if key == "e" {
+		value = m.data.Lists[m.list].Entries[m.cursor].Lines[0].CW
+	}
+	return m.openForm("Practice item", []string{"CW text"}, []string{value}, func(v []string) (library.Library, error) {
+		data := clone(m.data)
+		text := strings.ToUpper(strings.TrimSpace(v[0]))
+		e := library.Entry{ID: id(), Kind: "item", Title: text, Lines: []library.Line{{ID: id(), Station: "learner", CW: text, Spoken: text}}}
+		if key == "a" {
+			data.Lists[m.list].Entries = append(data.Lists[m.list].Entries, e)
+		} else {
+			old := &data.Lists[m.list].Entries[m.cursor]
+			old.Title = text
+			old.Lines[0].CW = text
+		}
+		return data, nil
+	})
+}
+func (m *Model) reorder(key string) tea.Cmd {
+	target := m.cursor + 1
+	if key == "K" {
+		target = m.cursor - 1
+	}
+	if target < 0 || target >= m.count() {
+		return nil
+	}
+	data := clone(m.data)
+	if m.screen == lists {
+		data.Lists[m.cursor], data.Lists[target] = data.Lists[target], data.Lists[m.cursor]
+	} else {
+		e := data.Lists[m.list].Entries
+		e[m.cursor], e[target] = e[target], e[m.cursor]
+	}
+	m.data = data
+	m.cursor = target
+	m.dirty = true
+	return m.persist()
+}

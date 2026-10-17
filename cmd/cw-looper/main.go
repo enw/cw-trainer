@@ -30,7 +30,7 @@ func run() error {
 	}
 	runner := output.NewRunner(&output.Mac{})
 	defer runner.Close()
-	_, err = tea.NewProgram(terminal.New(data, runner)).Run()
+	_, err = tea.NewProgram(terminal.New(data, runner, store.Save)).Run()
 	return err
 }
 func main() {
