@@ -61,6 +61,11 @@ type Effect struct {
 }
 
 type Session struct {
+	// Shuffle permits deterministic rounds in session tests. Nil uses random order.
+	Shuffle                  func([]int)
+	exchangeEntries          []bool
+	shuffleBag               []int
+	roundStarted             bool
 	portion                  int
 	unitInterval             int
 	afterGap                 Phase
@@ -266,6 +271,8 @@ func (s *Session) SelectEntries(lengths []int, entry, index int) {
 		return
 	}
 	s.entryLengths = append([]int(nil), lengths...)
+	s.exchangeEntries = nil
+	s.resetRound()
 	s.Entry = min(max(entry, 0), max(0, len(lengths)-1))
 	s.lines = 0
 	if len(lengths) > 0 {
@@ -287,6 +294,7 @@ func (s *Session) wantsPause() bool {
 func (s *Session) navigate(now time.Time) []Effect {
 	s.Revealed = false
 	s.Sample = -1
+	s.resetRound()
 	paused := s.wantsPause()
 	s.resetUnit()
 	s.Count = 0

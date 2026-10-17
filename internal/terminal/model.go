@@ -244,10 +244,13 @@ func (m *Model) count() int {
 func (m *Model) preparePractice() {
 	m.notice = ""
 	lengths := make([]int, len(m.data.Lists[m.list].Entries))
+	exchanges := make([]bool, len(lengths))
 	for i, e := range m.data.Lists[m.list].Entries {
 		lengths[i] = len(e.Lines)
+		exchanges[i] = e.Kind == "exchange"
 	}
 	m.session.SelectEntries(lengths, m.entry, m.cursor)
+	m.session.SetExchanges(exchanges)
 	m.session.Settings = m.data.Lists[m.list].Settings
 	m.screen = practice
 }

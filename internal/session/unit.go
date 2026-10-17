@@ -39,7 +39,10 @@ func (s *Session) completePortion() {
 	}
 }
 
-func (s *Session) finishUnit() { s.resetUnit() }
+func (s *Session) finishUnit() {
+	s.advanceUnit()
+	s.resetUnit()
+}
 
 // Configure applies display immediately and numeric audio settings at the next
 // CW. Policy changes cancel the current unit through the same stop barrier.

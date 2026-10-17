@@ -111,8 +111,8 @@ func (m *Model) practiceView() string {
 	if m.session.Line == len(m.currentLines())-1 {
 		boundary = "Last line · ] next item or Esc library\n"
 	}
-	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %.0f Hz\n\n%s\n\n%s · Completed: %d\n%g character / %g overall WPM · Pause %g s\n%s · %s · Repeat current\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · R reveal · p settings · Esc library · ? help · q quit",
-		clip(title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, config.CharacterWPM, config.OverallWPM, m.session.Settings.PauseSeconds, m.session.Settings.Display, m.session.Settings.Style, boundary)
+	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %.0f Hz\n\n%s\n\n%s · Completed: %d\n%g character / %g overall WPM · Pause %g s\n%s · %s · %s\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · R reveal · p settings · Esc library · ? help · q quit",
+		clip(title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, config.CharacterWPM, config.OverallWPM, m.session.Settings.PauseSeconds, m.session.Settings.Display, m.session.Settings.Style, m.session.Settings.Sequence, boundary)
 }
 func station(line library.Line) (string, int) {
 	if line.Station == "other" {
