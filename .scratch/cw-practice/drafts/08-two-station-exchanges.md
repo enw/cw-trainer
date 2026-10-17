@@ -1,16 +1,19 @@
-# 08 — Practice exchanges line by line with two station tones
+# 08 — Edit exchanges and advance automatically through lines
 
-**What to build:** Create and practice ordered exchange lines with a distinct tone for each station, repeating each line until Next or advancing automatically.
+**What to build:** Extend the skeleton’s two-station line practice with full exchange editing and optional automatic line advancement, integrating the completed practice modes.
 
 **Blocked by:** 05 — Follow along or listen without seeing the answer; 07 — Cycle or shuffle complete practice units.
 
-**Status:** draft — breakdown awaiting review
+**Status:** draft — design and skeleton must inform feature readiness
 
-- [ ] Create/edit/reorder/remove exchange lines, including CW text, editable spoken text, and learner/other station roles; preserve them on restart.
-- [ ] Start the learner at 440 Hz and the other station at 600 Hz; allow both tones to be adjusted and saved per list, applying edits on the next CW repetition.
-- [ ] Repeat a line until Next by default; left/right and h/l navigate lines, with clear behavior at exchange boundaries.
-- [ ] Offer automatic advancement after the current line's complete practice unit, retaining the chosen CW/speech pattern.
-- [ ] Preserve conversational line order even when top-level items/exchanges are shuffled; support lists mixing ordinary items and exchanges.
-- [ ] Display only the current line as the practice item, with the station role visible without leaking hidden answer text. R and S act on the current line.
-- [ ] Reset reveal state and repetition counts on line changes; cancel previous output before changing station tone.
-- [ ] Verify persistence and ordered progression, role frequencies, all display/playback combinations, manual/automatic navigation, and single-line exchanges.
+- [ ] Create/edit/reorder/remove exchanges and their lines, assigning CW text and learner/other station roles; reuse the spoken-phrase editor from ticket 06 and preserve edits on restart.
+- [ ] Reuse the skeleton’s line selection and station routing, with both adjustable tones supplied by ticket 03. Do not create a second exchange model or playback controller.
+- [ ] Keep repeat-until-Next as default; add automatic line advancement after the current line’s complete practice unit, with behavior at exchange boundaries matching the reviewed design.
+- [ ] Preserve conversational line order when top-level items/exchanges are shuffled and support lists mixing ordinary items and exchanges.
+- [ ] Apply ticket 05 display/reveal and ticket 06 reinforcement behavior to the current line; reset reveal/count state on line changes without leaking answers or retaining cancelled output.
+- [ ] Handle editing/deleting the active line, empty exchanges, and single-line exchanges without stale output or invalid navigation.
+- [ ] Verify save/reload, ordered automatic/manual progression, station tones, and combinations of display, speech, and sequencing modes through the existing session boundary.
+
+## Boundary
+
+Basic exchange playback, station routing, persistence, and navigation are owned by the skeleton. This slice adds editing and automatic progression; it does not introduce exchanges for the first time.

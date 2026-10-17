@@ -2,12 +2,12 @@
 
 **What to build:** Create named lists and edit, reorder, select, and practice ordinary text items entirely in the terminal, with changes surviving restart.
 
-**Blocked by:** 01 — Hear your callsign in a terminal practice loop.
+**Blocked by:** 01 — Run a saved two-station walking skeleton.
 
-**Status:** draft — breakdown awaiting review
+**Status:** draft — design and skeleton must inform feature readiness
 
-- [ ] Create and rename lists; add, edit, remove, and reorder ordinary message items. Each item can retain an optional editable spoken phrase for later speech playback.
-- [ ] Autosave changes durably outside the installed application; surface save failures and preserve existing data on read/parse errors.
+- [ ] Create and rename lists; add, edit, remove, and reorder ordinary message items. Retain spoken-phrase data without adding the pronunciation editor owned by ticket 06.
+- [ ] Extend the skeleton’s durable storage to autosave list/item edits; surface save failures and preserve existing data on read/parse errors.
 - [ ] Navigate lists with arrows and j/k; move between practice items with left/right and h/l. Shortcuts do not consume typing in text fields.
 - [ ] Repeat the selected item until navigation; navigation cancels prior output without overlapping the newly selected item.
 - [ ] Handle empty lists, deletion of the active item, and first/last-item navigation without crashes or stale playback. Document boundary behavior.
@@ -16,4 +16,4 @@
 
 ## Boundary
 
-Only minimal initial material is needed here. The complete curated library is delivered in ticket 09.
+Reuse the skeleton’s loading, saving, playback, and cancellation behavior. Exchange line editing belongs to ticket 08. Only minimal initial material is needed here. The complete curated library is delivered in ticket 09.

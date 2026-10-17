@@ -1,13 +1,13 @@
 # 03 — Tune and remember each list's practice settings
 
-**What to build:** Adjust character speed, overall speed, tone, and repetition pause in the terminal and retain a different setup for each list.
+**What to build:** Adjust character speed, overall speed, both station tones, and repetition pause in the terminal and retain a different setup for each list.
 
 **Blocked by:** 02 — Create and practice saved message lists.
 
-**Status:** draft — breakdown awaiting review
+**Status:** draft — design and skeleton must inform feature readiness
 
-- [ ] Provide discoverable controls for character speed, overall speed, tone, and the shared inter-portion pause; display their current values.
-- [ ] Start with 20/15 WPM, 440 Hz, and a two-second pause. Permit equal speeds for standard timing.
+- [ ] Provide discoverable controls for character speed, overall speed, learner/other station tones, and the shared inter-portion pause; display their current values.
+- [ ] Start with 20/15 WPM, 440 Hz learner / 600 Hz other station, and a two-second pause. Permit equal speeds for standard timing.
 - [ ] Validate finite positive speeds/frequencies, overall speed no greater than character speed, and a nonnegative pause. Document supported bounds.
 - [ ] Apply speed/tone edits at the next CW repetition, keeping the current rendering consistent; display pending values clearly when applicable.
 - [ ] Save settings per list and restore them after switching lists or restarting.

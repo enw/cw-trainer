@@ -14,6 +14,11 @@ them as dits and dahs while showing the current word and/or letter.
 
 The user will request each stage: grilling, then spec, then tickets, then
 implementation. Do not advance to the next stage without that request.
+The ticket sequence starts with UI/technical design, followed by a working
+two-station skeleton, then feature slices. The canonical dependency index is
+`.scratch/cw-practice/map.md`; revise the existing drafts rather than keeping
+alternative plans. Validate the design through the skeleton before treating
+the remaining feature drafts as implementation-ready.
 Commit completed work incrementally. Review status and stage only intended
 files before each commit; do not push unless requested.
 During grilling, ask one decision at a time. Capture approved requirements in

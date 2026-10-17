@@ -4,7 +4,7 @@
 
 **Blocked by:** 02 — Create and practice saved message lists.
 
-**Status:** draft — breakdown awaiting review
+**Status:** draft — design and skeleton must inform feature readiness
 
 - [ ] Provide a picker of supported common prosigns with meanings, inserting angle-bracket notation such as <AR>.
 - [ ] Play a prosign as one continuous signal without inter-letter spacing; ordinary AR remains separately spaced letters.

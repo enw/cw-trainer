@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 — Tune and remember each list's practice settings; 04 — Practice continuous prosigns and mixed phrases.
 
-**Status:** draft — breakdown awaiting review
+**Status:** draft — design and skeleton must inform feature readiness
 
 - [ ] Default to whole-item display; let the learner select and persist another display mode for each list.
 - [ ] Highlight the current ordinary character using the audio timing basis. Highlight an entire prosign as one unit.

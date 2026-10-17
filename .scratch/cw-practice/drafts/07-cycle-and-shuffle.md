@@ -4,7 +4,7 @@
 
 **Blocked by:** 06 — Reinforce CW with editable spoken prompts.
 
-**Status:** draft — breakdown awaiting review
+**Status:** draft — design and skeleton must inform feature readiness
 
 - [ ] Keep repeat-current as the default; expose cycle and shuffle and save the selection per list.
 - [ ] Proposed default: CW-only advances after one rendering; CW → speech → CW advances after its final CW; occasional-speech advances after its configured CW repetitions and spoken reinforcement.
