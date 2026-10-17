@@ -68,7 +68,7 @@ func (m *Model) browseView() string {
 		}
 		fmt.Fprintf(&b, "%s %s\n", marker, clip(rows[i], m.width-4))
 	}
-	b.WriteString("\nj/k select · Enter open · a item/line · A exchange · e edit · x delete · J/K reorder\nEsc/h back · ? help · q quit")
+	b.WriteString("\nj/k select · Enter open · a item/line · A exchange · e edit · x delete · J/K reorder\np settings · i import starters (Lists) · Esc/h back · ? help · q quit")
 	return b.String()
 }
 func (m *Model) practiceView() string {

@@ -52,7 +52,7 @@ func (s *Store) Load() (Library, error) {
 	var data Library
 	file, err := os.Open(s.path)
 	if errors.Is(err, os.ErrNotExist) {
-		data = Fixture()
+		data = Starter()
 		return data, s.Save(data)
 	}
 	if err != nil {

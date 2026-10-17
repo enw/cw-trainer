@@ -81,6 +81,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.confirm != nil {
 			return m, m.confirmKey(key)
 		}
+		if key == "i" && m.screen == lists {
+			return m, m.importStarter()
+		}
 		if key == "ctrl+s" && m.dirty {
 			return m, m.persist()
 		}

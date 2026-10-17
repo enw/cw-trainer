@@ -4,13 +4,13 @@
 
 **Blocked by:** 08 — Edit exchanges and advance automatically through lines.
 
-**Status:** draft — design and skeleton must inform feature readiness
+**Status:** implemented — curated seed and preservation/upgrade tests passed
 
-- [ ] Seed separate editable lists for KE2ISH, common terms, common prosigns, and short exchanges on first use; do not reseed over user edits or deliberately emptied lists.
-- [ ] Include CQ, DE, K, R, TU, 73, QTH, RST, and QRS, with useful additional terms and correct editable spoken phrases.
-- [ ] Include prosign meanings and verified continuous encodings; keep ordinary abbreviations distinct.
-- [ ] Include short ordered exchanges for calling CQ, answering, reports, name/location, repeats, slower sending, and signing off; use KE2ISH as the learner station and a consistently identified example counterpart.
-- [ ] Verify terminology, prosign use, and exchange wording against authoritative amateur-radio references; record sources and explain example callsigns are practice material.
+- [x] Seed separate editable lists for KE2ISH, common terms, common prosigns, and short exchanges on first use; do not reseed over user edits or deliberately emptied lists.
+- [x] Include CQ, DE, K, R, TU, 73, QTH, RST, and QRS, with useful additional terms and correct editable spoken phrases.
+- [x] Include prosign meanings and verified continuous encodings; keep ordinary abbreviations distinct.
+- [x] Include short ordered exchanges for calling CQ, answering, reports, name/location, repeats, slower sending, and signing off; use KE2ISH as the learner station and a consistently identified example counterpart.
+- [x] Verify terminology, prosign use, and exchange wording against authoritative amateur-radio references; record sources and explain example callsigns are practice material.
 
 ## Boundary
 
@@ -21,4 +21,4 @@ This slice owns content and non-destructive first-run seeding. Ticket 10 owns th
 Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
 [playback architecture](../../../docs/design/playback-architecture.md).
 Design is approved. Skeleton software is implemented, with listening acceptance
-pending. This ticket has not started.
+pending. Sources and practice-example qualifications are in docs/design/content-sources.md. Existing installations can explicitly import fresh starter copies without modifying their old lists.
