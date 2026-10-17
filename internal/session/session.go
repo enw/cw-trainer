@@ -19,9 +19,10 @@ type Kind int
 
 const (
 	Start Kind = iota
-	StartPaused
 	Next
 	Previous
+	NextEntry
+	PreviousEntry
 	TogglePause
 	Speak
 	Back
@@ -55,6 +56,8 @@ type Effect struct {
 type Session struct {
 	Phase               Phase
 	Line                int
+	Entry               int
+	entryLengths        []int
 	Count               int
 	Err                 error
 	lines               int
@@ -67,7 +70,9 @@ type Session struct {
 	quitting            bool
 }
 
-func New(lines int) *Session { return &Session{Phase: Idle, lines: lines, resume: CW} }
+func New(lines int) *Session {
+	return &Session{Phase: Idle, lines: lines, entryLengths: []int{lines}, resume: CW}
+}
 
 // Update is serialized by the UI event loop; time is supplied for deterministic
 // gap tests. Output completion is accepted only for the active generation.
@@ -84,16 +89,13 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 	case Back:
 		s.speechReturnsPaused = false
 		return s.transition(Idle, now)
-	case Start, StartPaused:
+	case Start:
 		if s.lines == 0 {
 			return nil
 		}
 		s.Err = nil
 		s.Count = 0
 		s.resume = CW
-		if in.Kind == StartPaused {
-			return s.transition(Paused, now)
-		}
 		return s.transition(CW, now)
 	case Next, Previous:
 		step := 1
@@ -105,24 +107,27 @@ func (s *Session) Update(in Input, now time.Time) []Effect {
 			return nil
 		}
 		s.Line = target
-		s.Count = 0
-		s.resume = CW
-		paused := s.Phase == Paused || (s.Phase == Stopping && s.pending == Paused) || s.speechReturnsPaused
-		s.speechReturnsPaused = false
-		if paused {
-			return s.transition(Paused, now)
+		return s.navigate(now)
+	case NextEntry, PreviousEntry:
+		step := 1
+		if in.Kind == PreviousEntry {
+			step = -1
 		}
-		if s.Phase == Idle || s.Phase == Failed {
+		target := min(max(s.Entry+step, 0), len(s.entryLengths)-1)
+		if len(s.entryLengths) == 0 || target == s.Entry {
 			return nil
 		}
-		return s.transition(CW, now)
+		s.Entry = target
+		s.lines = s.entryLengths[target]
+		s.Line = 0
+		return s.navigate(now)
 	case TogglePause:
 		return s.pause(now)
 	case Speak:
 		if s.lines == 0 || s.Phase == Idle || s.Phase == Failed {
 			return nil
 		}
-		s.speechReturnsPaused = s.Phase == Paused || (s.Phase == Stopping && s.pending == Paused) || s.speechReturnsPaused
+		s.speechReturnsPaused = s.wantsPause()
 		s.Count = 0
 		s.resume = CW
 		return s.transition(Speech, now)
@@ -217,22 +222,41 @@ func (s *Session) pause(now time.Time) []Effect {
 	return s.transition(Paused, now)
 }
 
-// Select changes the available lines only while stopped, preserving generation
-// IDs so a late worker event from another exchange cannot match a new operation.
-func (s *Session) Select(lines, index int) {
+// Select is the single-exchange form of SelectEntries.
+func (s *Session) Select(lines, index int) { s.SelectEntries([]int{lines}, 0, index) }
+
+// SelectEntries configures a stopped session without reusing generation IDs.
+// The session owns both line and top-level navigation, including pending intent.
+func (s *Session) SelectEntries(lengths []int, entry, index int) {
 	if s.Phase != Idle && s.Phase != Failed {
 		return
 	}
-	s.lines = lines
-	s.Line = min(max(index, 0), max(0, lines-1))
+	s.entryLengths = append([]int(nil), lengths...)
+	s.Entry = min(max(entry, 0), max(0, len(lengths)-1))
+	s.lines = 0
+	if len(lengths) > 0 {
+		s.lines = lengths[s.Entry]
+	}
+	s.Line = min(max(index, 0), max(0, s.lines-1))
 	s.Count = 0
 	s.Err = nil
 	s.Phase = Idle
 	s.resume = CW
 	s.speechReturnsPaused = false
 }
-
-// WantsPause includes an in-flight cancellation and speak-now while paused.
-func (s *Session) WantsPause() bool {
+func (s *Session) wantsPause() bool {
 	return s.Phase == Paused || (s.Phase == Stopping && s.pending == Paused) || s.speechReturnsPaused
+}
+func (s *Session) navigate(now time.Time) []Effect {
+	paused := s.wantsPause()
+	s.Count = 0
+	s.resume = CW
+	s.speechReturnsPaused = false
+	if paused {
+		return s.transition(Paused, now)
+	}
+	if s.Phase == Idle || s.Phase == Failed {
+		return nil
+	}
+	return s.transition(CW, now)
 }

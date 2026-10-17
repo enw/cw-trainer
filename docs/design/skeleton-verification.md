@@ -12,7 +12,9 @@ gaps; pause/resume; speak-now; arrow/vi navigation; stop/quit cleanup.
 
 The session is the single playback policy owner. Workers acknowledge stop only
 after cancellation and cleanup, and operation IDs remain unique across exchange
-selection. A regression check covers top-level navigation while paused.
+selection. Regression checks cover top-level navigation while paused, mixed controls during
+a pending switch, and resizing during cancellation. Both line and exchange
+selection/continuation are owned by the session, not a second UI state machine.
 
 ## Automated results
 
@@ -90,3 +92,12 @@ clicks, recognizable speech, and no audible overlap/tail during pause, speak-now
 navigation, and quit. The original ≤100 ms audible-stop target remains unverified.
 If that check fails, revise the output adapter before advancing feature work.
 Ticket 01 is implemented and ready for this final acceptance, not marked resolved.
+
+## Implementation review
+
+The standards and spec reviews found overlapping cancellation defects in the
+initial implementation: terminal-owned pending item navigation could be stranded
+by another key or restarted after resizing. Three regression tests reproduced
+the failures before the fix. Pending selection and paused continuation were
+moved into the session; the terminal now only dispatches navigation actions.
+The focused regressions and the full test/race/vet checks passed after the fix.

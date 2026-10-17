@@ -22,14 +22,12 @@ const (
 )
 
 type Model struct {
-	pendingPaused       bool
 	data                library.Library
 	runner              *output.Runner
 	session             *session.Session
 	screen              screen
 	list, entry, cursor int
 	width, height       int
-	pendingEntry        *int
 	help                bool
 }
 
@@ -49,7 +47,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		key := msg.String()
 		if key == "q" || key == "ctrl+c" {
-			m.pendingEntry = nil
 			return m, m.dispatch(session.Input{Kind: session.Quit})
 		}
 		if m.small() {
@@ -79,6 +76,9 @@ func (m *Model) small() bool                  { return m.width < 80 || m.height 
 func (m *Model) currentLines() []library.Line { return m.data.Lists[m.list].Entries[m.entry].Lines }
 func (m *Model) dispatch(in session.Input) tea.Cmd {
 	effects := m.session.Update(in, time.Now())
+	if m.screen == practice {
+		m.entry = m.session.Entry
+	}
 	var cmds []tea.Cmd
 	exiting := false
 	for _, effect := range effects {
@@ -95,21 +95,8 @@ func (m *Model) dispatch(in session.Input) tea.Cmd {
 		cmds = append(cmds, func() tea.Msg { return <-events })
 	}
 	if m.session.Phase == session.Idle && m.screen == practice && !exiting {
-		if m.pendingEntry != nil {
-			m.entry = *m.pendingEntry
-			m.pendingEntry = nil
-			m.cursor = 0
-			m.session.Select(len(m.currentLines()), 0)
-			kind := session.Start
-			if m.pendingPaused {
-				kind = session.StartPaused
-			}
-			m.pendingPaused = false
-			cmds = append(cmds, m.dispatch(session.Input{Kind: kind}))
-		} else {
-			m.screen = lines
-			m.cursor = m.session.Line
-		}
+		m.screen = lines
+		m.cursor = m.session.Line
 	}
 	return tea.Batch(cmds...)
 }
@@ -125,29 +112,16 @@ func (m *Model) practiceKey(key string) tea.Cmd {
 	case "right", "l":
 		action.Kind = session.Next
 	case "esc":
-		m.pendingEntry = nil
 		action.Kind = session.Back
 	case "enter":
 		if m.session.Phase != session.Failed {
 			return nil
 		}
 		action.Kind = session.Start
-	case "[", "]":
-		step := 1
-		if key == "[" {
-			step = -1
-		}
-		current := m.entry
-		if m.pendingEntry != nil {
-			current = *m.pendingEntry
-		}
-		target := min(max(current+step, 0), len(m.data.Lists[m.list].Entries)-1)
-		if target == current {
-			return nil
-		}
-		m.pendingPaused = m.session.WantsPause()
-		m.pendingEntry = &target
-		action.Kind = session.Back
+	case "[":
+		action.Kind = session.PreviousEntry
+	case "]":
+		action.Kind = session.NextEntry
 	default:
 		return nil
 	}
@@ -183,7 +157,11 @@ func (m *Model) browseKey(key string) {
 			m.screen = lines
 			m.cursor = 0
 		case lines:
-			m.session.Select(count, m.cursor)
+			lengths := make([]int, len(m.data.Lists[m.list].Entries))
+			for i, entry := range m.data.Lists[m.list].Entries {
+				lengths[i] = len(entry.Lines)
+			}
+			m.session.SelectEntries(lengths, m.entry, m.cursor)
 			m.screen = practice
 		}
 	}
