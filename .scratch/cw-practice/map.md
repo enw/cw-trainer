@@ -29,5 +29,30 @@ to delegate or implement concurrently. Each ticket verifies its own behavior;
 Ticket 00 design is approved and resolved. Ticket 01 is implemented and
 ready-for-human for final listening acceptance; see the
 [verification record](../../docs/design/skeleton-verification.md).
-Tickets 02–10 have not started. The current user request authorized only the
-walking skeleton. Software checks do not replace audible quality/tail validation.
+Tickets 02–09 are implemented and incrementally committed. Ticket 10 completes
+the integration and documentation on branch `complete-cw-practice`. The user
+authorized the remaining build on 2026-10-16. See the [complete verification
+record](../../docs/design/complete-verification.md) for tests and PTY/device
+evidence. Human listening acceptance remains pending; software checks do not
+replace audible quality/tail validation.
+
+## Follow-up slices
+
+The user requested these issues during implementation and subsequently authorized
+all remaining slices. Tickets 11/12 are implemented, independent of each other,
+and reuse completed 09. The separate Vail input path starts with hardware verification.
+
+| Ticket | Delivers | Blocked by |
+| --- | --- | --- |
+| [11](issues/11-nato-phonetic-alphabet.md) | NATO/ITU phonetic alphabet practice and reference | 09 |
+| [12](issues/12-rst-system.md) | RST report practice and rating-scale reference | 09 |
+| [13](issues/13-vail-midi-verification.md) | Prove USB MIDI input from the actual Vail touch pads | None |
+| [14](issues/14-listen-send-replay.md) | Hear a target, send it back, replay captured timing | 13, 10 |
+| [15](issues/15-sending-feedback.md) | Tentative decode and timing/spacing feedback | 14 |
+
+Vail sequence: **13 → 14 → 15**. The learner uses capacitive touch pads with
+Iambic B. A cooperative CoreMIDI probe verified their actual USB MIDI marks;
+see [device evidence](../../docs/design/vail-midi-verification.md). Tickets 13/14 now have a native MIDI diagnostic and send-back capture/replay.
+Recorded input, interruption and measured replay tests pass; the user passed the live A capture/decode/replay walkthrough on 2026-10-17.
+The user also confirmed unplug/reconnect recovery after reselecting QT Py M0. Ticket 15 implements independent-speed tentative decoding, spacing feedback and
+hidden-safe comparison; broader live feedback cases remain open after the A test.

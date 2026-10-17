@@ -4,6 +4,7 @@ package output
 import (
 	"context"
 	"cw-looper/internal/library"
+	"cw-looper/internal/morse"
 	"cw-looper/internal/session"
 	"fmt"
 	"sync"
@@ -11,8 +12,11 @@ import (
 )
 
 type Backend interface {
-	CW(context.Context, string, float64) error
+	CW(context.Context, string, float64, float64, float64) error
 	Speech(context.Context, string) error
+}
+type progressBackend interface {
+	CWProgress(context.Context, string, float64, float64, float64, func(int64)) error
 }
 type operation struct {
 	id     uint64
@@ -20,9 +24,11 @@ type operation struct {
 	done   chan struct{}
 }
 type Runner struct {
-	backend Backend
-	mu      sync.Mutex
-	active  *operation
+	backend    Backend
+	mu         sync.Mutex
+	active     *operation
+	progressID uint64
+	sample     int64
 }
 
 func NewRunner(backend Backend) *Runner { return &Runner{backend: backend} }
@@ -61,18 +67,46 @@ func (r *Runner) Execute(effect session.Effect, line library.Line) <-chan sessio
 	ctx, cancel := context.WithCancel(context.Background())
 	op := &operation{effect.ID, cancel, make(chan struct{})}
 	r.active = op
+	r.progressID, r.sample = effect.ID, -1
 	go func() {
 		defer cancel()
 		var err error
 		switch effect.Kind {
 		case session.PlayCW:
-			hz := 440.0
-			if line.Station == "other" {
-				hz = 600
+			config := effect.Settings
+			if config.CharacterWPM == 0 {
+				config = library.Defaults()
 			}
-			err = r.backend.CW(ctx, line.CW, hz)
+			hz := config.LearnerHz
+			if line.Station == "other" {
+				hz = config.OtherHz
+			}
+			if backend, ok := r.backend.(progressBackend); ok {
+				err = backend.CWProgress(ctx, line.CW, hz, config.CharacterWPM, config.OverallWPM, func(sample int64) {
+					r.mu.Lock()
+					defer r.mu.Unlock()
+					if r.progressID == effect.ID {
+						r.sample = sample
+					}
+				})
+			} else {
+				err = r.backend.CW(ctx, line.CW, hz, config.CharacterWPM, config.OverallWPM)
+			}
+		case session.PlayAttempt:
+			backend, ok := r.backend.(interface {
+				Timeline(context.Context, morse.Timeline, float64) error
+			})
+			if !ok {
+				err = fmt.Errorf("output cannot replay measured timing")
+			} else {
+				hz := effect.Settings.LearnerHz
+				if line.Station == "other" {
+					hz = effect.Settings.OtherHz
+				}
+				err = backend.Timeline(ctx, effect.Timeline, hz)
+			}
 		case session.PlaySpeech:
-			err = r.backend.Speech(ctx, line.Spoken)
+			err = r.backend.Speech(ctx, library.Spoken(line))
 		case session.Wait:
 			timer := time.NewTimer(effect.Duration)
 			select {
@@ -105,4 +139,10 @@ func (r *Runner) Close() {
 	if op != nil {
 		<-op.done
 	}
+}
+
+func (r *Runner) Progress() (uint64, int64) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.progressID, r.sample
 }

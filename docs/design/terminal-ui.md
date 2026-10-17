@@ -171,3 +171,28 @@ instructions; never seed over the file. Save failure leaves the edited data in
 memory marked “Not saved” with retry; quit confirms discarding unsaved changes.
 Ctrl+C always stops output and exits promptly; persist accepted edits beforehand
 and report unsaved data rather than trapping emergency exit behind a dialog.
+
+
+## Delivered interaction details (ticket 10)
+
+The settings overlay uses the shared focused form: Tab/Shift+Tab moves through
+fields, Ctrl+S accepts and persists the whole validated form, and Esc discards
+unaccepted edits. At 80×24 it scrolls fields with focus. Choice fields show the
+accepted values in their labels (`sandwich` means CW-talk-CW). This replaces the
+sketch's per-field Enter acceptance; playback application boundaries above are
+unchanged. Clearing a spoken override is the explicit use-generated action.
+Highlighting brackets one character/prosign in the full line. Settings show
+active versus pending audio values and the active occasional-speech interval.
+Content editors only open after playback is stopped. A pending settings save
+leaves practice controls responsive; normal quit stops output and waits for the
+save, while Ctrl+C exits and reports unsaved state. New exchange creation uses
+A; a adds an ordinary item or line; i explicitly imports starter copies at Lists.
+
+## Operating reference
+
+`o` opens a source-backed operating reference from browsing or practice. `j/k`
+or up/down arrows scroll; `h/l`, left/right arrows or Tab switches NATO/RST pages;
+`Esc/o` returns to the same selection. Practice keeps its
+state and Space can pause/resume audio. The reference is generic, never highlights
+the current hidden answer. Import with `i` while browsing asks confirmation and
+adds a fresh editable list with new identities; no existing material is replaced.

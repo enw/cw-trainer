@@ -7,8 +7,8 @@ them as dits and dahs while showing the current word and/or letter.
 
 - Configurable audio tone, starting at 440 Hz.
 - Configurable sending speed, starting at 15 WPM.
-- Ticket 00 design is recorded in `docs/design/`; the user approved it. The walking skeleton is implemented;
-  final listening acceptance is pending. Consult it before changing interaction or stack decisions.
+- Ticket 00 design is recorded in `docs/design/`; the user approved it. Tickets 00–10 are implemented; final human listening acceptance is pending.
+  Consult docs/design/complete-verification.md before claiming acoustic verification.
 
 ## Workflow
 
@@ -42,9 +42,9 @@ Read the relevant `SKILL.md` when invoking a stage:
 - Format: `gofmt -w` on changed Go files.
 - The session owns playback policy; terminal code dispatches actions; output workers
   report completion or stopped events. Preserve the cancellation barrier and IDs.
-- `docs/design/skeleton-verification.md` records evidence and outstanding listening
-  acceptance. Do not treat software cleanup timings as acoustic verification.
-- Only ticket 01 has been implemented. Do not begin later slices without a request.
+- `docs/design/complete-verification.md` records current evidence and outstanding
+  listening acceptance; the skeleton record is historical. Do not treat software cleanup timings as acoustic verification.
+- Tickets 00–10 are implemented. Tickets 13–15 implement Vail MIDI, send-back practice and tentative feedback; the live A capture/decode/replay walkthrough passed on 2026-10-17. Unplug/reconnect passed after reselecting QT Py M0; broader live feedback acceptance remains open. Tickets 11 and 12 implement NATO/RST starters and an operating reference.
 
 ## Agent skills
 

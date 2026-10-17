@@ -62,7 +62,7 @@ func TestPausedTopLevelNavigationStaysSilent(t *testing.T) {
 
 type silentBackend struct{}
 
-func (*silentBackend) CW(ctx context.Context, text string, hz float64) error {
+func (*silentBackend) CW(ctx context.Context, text string, hz, character, overall float64) error {
 	<-ctx.Done()
 	return ctx.Err()
 }
@@ -134,4 +134,35 @@ func press(model *terminal.Model, key string) tea.Cmd {
 	}
 	_, cmd := model.Update(msg)
 	return cmd
+}
+
+func TestCreateListAndItemPersistsWithoutConsumingTyping(t *testing.T) {
+	var saved library.Library
+	model := terminal.New(library.Fixture(), output.NewRunner(nil), func(data library.Library) error { saved = data; return nil })
+	press(model, "a")
+	for _, r := range "quiet skills" {
+		model.Update(tea.KeyPressMsg{Code: r, Text: string(r)})
+	}
+	_, cmd := model.Update(tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl})
+	if cmd == nil {
+		t.Fatal("no save")
+	}
+	model.Update(cmd())
+	if len(saved.Lists) != 2 || saved.Lists[1].Name != "quiet skills" {
+		t.Fatalf("typed shortcut consumed: %+v", saved)
+	}
+	press(model, "j")
+	press(model, "enter")
+	press(model, "a")
+	for _, r := range "CQ" {
+		model.Update(tea.KeyPressMsg{Code: r, Text: string(r)})
+	}
+	_, cmd = model.Update(tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl})
+	if cmd == nil {
+		t.Fatal("no item save")
+	}
+	model.Update(cmd())
+	if saved.Lists[1].Entries[0].Kind != "item" {
+		t.Fatal("item not saved")
+	}
 }

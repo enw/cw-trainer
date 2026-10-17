@@ -80,10 +80,8 @@ func (l Library) Validate() error {
 		if !plain(list.Name, 100) {
 			return fmt.Errorf("invalid list name")
 		}
-		// Ticket 01 deliberately supports only the fixed preset. Refuse future modes
-		// rather than silently ignoring saved settings the app cannot yet honor.
-		if list.Settings != Defaults() {
-			return fmt.Errorf("this skeleton requires the fixed 20/15 WPM, 440/600 Hz preset")
+		if err := list.Settings.Validate(); err != nil {
+			return err
 		}
 		if len(list.Entries) > 100 {
 			return fmt.Errorf("too many entries")
@@ -92,10 +90,10 @@ func (l Library) Validate() error {
 			if err := id(entry.ID); err != nil {
 				return err
 			}
-			if entry.Kind != "exchange" || !plain(entry.Title, 100) {
-				return fmt.Errorf("expected an exchange with a title")
+			if (entry.Kind != "exchange" && entry.Kind != "item") || !plain(entry.Title, 100) {
+				return fmt.Errorf("expected an item or exchange with a title")
 			}
-			if len(entry.Lines) == 0 || len(entry.Lines) > 100 {
+			if len(entry.Lines) == 0 || len(entry.Lines) > 100 || (entry.Kind == "item" && len(entry.Lines) != 1) {
 				return fmt.Errorf("exchange must contain 1–100 lines")
 			}
 			for _, line := range entry.Lines {
@@ -111,7 +109,7 @@ func (l Library) Validate() error {
 				if _, err := morse.Compile(line.CW, 20, 15, false); err != nil {
 					return err
 				}
-				if !plain(line.Spoken, 1024) {
+				if line.Spoken != "" && !plain(line.Spoken, 1024) {
 					return fmt.Errorf("spoken phrase must contain 1–1024 plain characters")
 				}
 			}

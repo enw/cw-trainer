@@ -48,11 +48,22 @@ func (m *Mac) prepare(ctx context.Context) error {
 	}
 	return nil
 }
-func (m *Mac) CW(ctx context.Context, text string, hz float64) error {
-	timeline, err := morse.Compile(text, 20, 15, false)
+func (m *Mac) CW(ctx context.Context, text string, hz, character, overall float64) error {
+	return m.CWProgress(ctx, text, hz, character, overall, func(int64) {})
+}
+
+func (m *Mac) CWProgress(ctx context.Context, text string, hz, character, overall float64, progress func(int64)) error {
+	timeline, err := morse.Compile(text, character, overall, false)
 	if err != nil {
 		return err
 	}
+	return m.playTimeline(ctx, timeline, hz, progress)
+}
+
+func (m *Mac) Timeline(ctx context.Context, timeline morse.Timeline, hz float64) error {
+	return m.playTimeline(ctx, timeline, hz, func(int64) {})
+}
+func (m *Mac) playTimeline(ctx context.Context, timeline morse.Timeline, hz float64, progress func(int64)) error {
 	pcm, err := morse.NewPCM(timeline, hz)
 	if err != nil {
 		return err
@@ -83,6 +94,8 @@ func (m *Mac) CW(ctx context.Context, text string, hz float64) error {
 		case <-deadline.C:
 			return fmt.Errorf("audio playback stalled; check selected output and restart")
 		case <-ticker.C:
+			// Subtract queued player bytes and the configured device buffer.
+			progress(max(0, pcm.ReadSamples()-int64(player.BufferedSize()/4)-morse.SampleRate*20/1000))
 			if err := m.audio.Err(); err != nil {
 				return fmt.Errorf("audio device failed; restart app: %w", err)
 			}

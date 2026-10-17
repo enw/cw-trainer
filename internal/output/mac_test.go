@@ -22,7 +22,7 @@ func TestMacOutputLifecycle(t *testing.T) {
 	for _, hz := range []float64{440, 600} {
 		start := time.Now()
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		err := backend.CW(ctx, "ET", hz)
+		err := backend.CW(ctx, "ET", hz, 20, 15)
 		cancel()
 		if err != nil {
 			t.Fatal(err)
@@ -35,7 +35,7 @@ func TestMacOutputLifecycle(t *testing.T) {
 			done := make(chan error, 1)
 			go func() {
 				if kind == "cw" {
-					done <- backend.CW(ctx, strings.Repeat("KE2ISH ", 20), 440)
+					done <- backend.CW(ctx, strings.Repeat("KE2ISH ", 20), 440, 20, 15)
 				} else {
 					done <- backend.Speech(ctx, strings.Repeat("K E two I S H ", 30))
 				}

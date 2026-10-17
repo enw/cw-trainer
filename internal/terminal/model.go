@@ -2,12 +2,11 @@
 package terminal
 
 import (
-	"fmt"
-	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"cw-looper/internal/library"
+	"cw-looper/internal/midi"
 	"cw-looper/internal/output"
 	"cw-looper/internal/session"
 )
@@ -22,21 +21,59 @@ const (
 )
 
 type Model struct {
-	data                library.Library
-	runner              *output.Runner
-	session             *session.Session
-	screen              screen
-	list, entry, cursor int
-	width, height       int
-	help                bool
+	reference                *operatingReference
+	feedbackOpen             bool
+	feedbackScroll           int
+	sendWPM                  float64
+	midi                     midiState
+	data                     library.Library
+	runner                   *output.Runner
+	session                  *session.Session
+	screen                   screen
+	list, entry, cursor      int
+	width, height            int
+	help                     bool
+	form                     *form
+	confirm                  *confirmation
+	save                     func(library.Library) error
+	saving, dirty            bool
+	exitAfterSave, forceExit bool
+	notice                   string
 }
 
-func New(data library.Library, runner *output.Runner) *Model {
-	return &Model{data: data, runner: runner, session: session.New(0), width: 80, height: 24}
+func New(data library.Library, runner *output.Runner, save ...func(library.Library) error) *Model {
+	m := &Model{sendWPM: 15, data: data, runner: runner, session: session.New(0), width: 80, height: 24}
+	m.midi.manager = midi.NewManager(midi.Mac{})
+	if len(save) > 0 {
+		m.save = save[0]
+	}
+	return m
 }
 func (m *Model) Init() tea.Cmd { return nil }
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case midiDevicesMsg, midiConnectedMsg, midiPollMsg, midiTickMsg:
+		return m, m.midiMessage(msg)
+	case progressMsg:
+		if msg.id != m.session.CurrentID() || m.session.Phase != session.CW {
+			return m, nil
+		}
+		id, sample := m.runner.Progress()
+		m.session.Update(session.Input{Kind: session.Progress, ID: id, Sample: sample}, time.Now())
+		return m, progressTick(msg.id)
+	case savedMsg:
+		m.saving = false
+		if msg.err != nil {
+			m.notice = "Not saved: " + msg.err.Error() + " · Ctrl+S retry"
+		} else {
+			m.dirty = false
+			m.notice = "Saved"
+		}
+		if m.exitAfterSave {
+			m.exitAfterSave = false
+			return m, m.finishExit()
+		}
+		return m, nil
 	case session.Input:
 		return m, m.dispatch(msg)
 	case tea.WindowSizeMsg:
@@ -46,11 +83,62 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.KeyPressMsg:
 		key := msg.String()
+		if key == "ctrl+c" {
+			m.forceExit = true
+			if m.exitAfterSave {
+				return m, tea.Quit
+			}
+			return m, m.dispatch(session.Input{Kind: session.Quit})
+		}
+		if m.saving {
+			if key == "q" {
+				return m, m.dispatch(session.Input{Kind: session.Quit})
+			}
+			if m.screen == practice {
+				return m, m.practiceKey(key)
+			}
+			return m, nil
+		}
+		if m.form != nil {
+			return m, m.formKey(msg)
+		}
+		if m.confirm != nil {
+			return m, m.confirmKey(key)
+		}
+		if key == "i" && m.screen == lists && m.reference == nil {
+			return m, m.importStarter()
+		}
+		if key == "ctrl+s" && m.dirty {
+			return m, m.persist()
+		}
+		if key == "q" && m.dirty {
+			m.confirm = &confirmation{"Discard unsaved changes and quit?", func() tea.Cmd { m.forceExit = true; return m.dispatch(session.Input{Kind: session.Quit}) }}
+			return m, nil
+		}
 		if key == "q" || key == "ctrl+c" {
 			return m, m.dispatch(session.Input{Kind: session.Quit})
 		}
+		if m.midi.open {
+			return m, m.midiKey(key)
+		}
+		if m.reference != nil {
+			return m, m.referenceKey(key)
+		}
+		if key == "o" && !m.small() {
+			m.reference = &operatingReference{}
+			return m, nil
+		}
+		if key == "m" && m.screen != practice {
+			return m, m.openMIDI()
+		}
 		if m.small() {
 			return m, nil
+		}
+		if m.feedbackOpen && m.screen == practice && m.session.SendBack {
+			return m, m.feedbackKey(key)
+		}
+		if key == "p" && m.screen != lists {
+			return m, m.settingsForm()
 		}
 		if key == "?" {
 			m.help = !m.help
@@ -65,9 +153,22 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.screen == practice {
 			return m, m.practiceKey(key)
 		}
+		if key == "t" {
+			return m, m.startSending()
+		}
+		if key == "a" || key == "A" || key == "e" || key == "x" || key == "J" || key == "K" {
+			return m, m.editKey(key)
+		}
 		m.browseKey(key)
 		if m.screen == practice {
 			return m, m.dispatch(session.Input{Kind: session.Start})
+		}
+	default:
+		if m.form != nil && !m.form.picker {
+			f := m.form
+			var cmd tea.Cmd
+			f.fields[f.focus], cmd = f.fields[f.focus].Update(msg)
+			return m, cmd
 		}
 	}
 	return m, nil
@@ -75,7 +176,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) small() bool                  { return m.width < 80 || m.height < 24 }
 func (m *Model) currentLines() []library.Line { return m.data.Lists[m.list].Entries[m.entry].Lines }
 func (m *Model) dispatch(in session.Input) tea.Cmd {
-	effects := m.session.Update(in, time.Now())
+	return m.applyEffects(m.session.Update(in, time.Now()))
+}
+func (m *Model) applyEffects(effects []session.Effect) tea.Cmd {
 	if m.screen == practice {
 		m.entry = m.session.Entry
 	}
@@ -83,34 +186,52 @@ func (m *Model) dispatch(in session.Input) tea.Cmd {
 	exiting := false
 	for _, effect := range effects {
 		if effect.Kind == session.Exit {
-			cmds = append(cmds, tea.Quit)
+			cmds = append(cmds, m.finishExit())
 			exiting = true
 			continue
 		}
 		var line library.Line
-		if effect.Kind == session.PlayCW || effect.Kind == session.PlaySpeech {
+		if effect.Kind == session.PlayCW || effect.Kind == session.PlaySpeech || effect.Kind == session.PlayAttempt {
 			line = m.currentLines()[m.session.Line]
 		}
 		events := m.runner.Execute(effect, line)
+		if effect.Kind == session.PlayCW {
+			cmds = append(cmds, progressTick(effect.ID))
+		}
 		cmds = append(cmds, func() tea.Msg { return <-events })
 	}
 	if m.session.Phase == session.Idle && m.screen == practice && !exiting {
 		m.screen = lines
 		m.cursor = m.session.Line
+		if m.data.Lists[m.list].Entries[m.entry].Kind == "item" {
+			m.screen = entries
+			m.cursor = m.entry
+		}
 	}
 	return tea.Batch(cmds...)
 }
 func (m *Model) practiceKey(key string) tea.Cmd {
+	if cmd, handled := m.sendingKey(key); handled {
+		return cmd
+	}
 	action := session.Input{}
 	switch key {
 	case "space":
 		action.Kind = session.TogglePause
+	case "r", "R":
+		action.Kind = session.Reveal
 	case "s", "S":
 		action.Kind = session.Speak
 	case "left", "h":
 		action.Kind = session.Previous
+		if m.data.Lists[m.list].Entries[m.entry].Kind == "item" {
+			action.Kind = session.PreviousEntry
+		}
 	case "right", "l":
 		action.Kind = session.Next
+		if m.data.Lists[m.list].Entries[m.entry].Kind == "item" {
+			action.Kind = session.NextEntry
+		}
 	case "esc":
 		action.Kind = session.Back
 	case "enter":
@@ -156,13 +277,11 @@ func (m *Model) browseKey(key string) {
 			m.entry = m.cursor
 			m.screen = lines
 			m.cursor = 0
-		case lines:
-			lengths := make([]int, len(m.data.Lists[m.list].Entries))
-			for i, entry := range m.data.Lists[m.list].Entries {
-				lengths[i] = len(entry.Lines)
+			if m.data.Lists[m.list].Entries[m.entry].Kind == "item" {
+				m.preparePractice()
 			}
-			m.session.SelectEntries(lengths, m.entry, m.cursor)
-			m.screen = practice
+		case lines:
+			m.preparePractice()
 		}
 	}
 }
@@ -177,95 +296,43 @@ func (m *Model) count() int {
 	}
 	return 0
 }
-func (m *Model) View() tea.View {
-	var content string
-	switch {
-	case m.small():
-		content = "cw-looper\n\nResize the terminal to at least 80 columns × 24 rows.\nPlayback stopped. Selection is preserved.\n\nq quit"
-	case m.help:
-		content = "cw-looper · Help\n\nBrowse: arrows or j/k select; Enter/l opens; Esc/h goes back.\nPractice: Space pauses; h/l or arrows change lines; [/] change items.\ns speaks the current phrase; Esc stops and returns; q quits.\n\nPause restarts interrupted CW/speech; gaps resume their remainder.\nNavigation stays silent while paused. Lines repeat until you advance.\n\nThis skeleton has fixed 20/15 WPM, 440/600 Hz and 2-second gaps.\nEditing and other modes arrive in later slices.\n\n? or Esc closes help · q quit"
-	case m.screen == practice:
-		content = m.practiceView()
-	default:
-		content = m.browseView()
+
+func (m *Model) preparePractice() {
+	m.notice = ""
+	lengths := make([]int, len(m.data.Lists[m.list].Entries))
+	exchanges := make([]bool, len(lengths))
+	for i, e := range m.data.Lists[m.list].Entries {
+		lengths[i] = len(e.Lines)
+		exchanges[i] = e.Kind == "exchange"
 	}
-	view := tea.NewView(content)
-	view.AltScreen = true
-	return view
+	m.session.SelectEntries(lengths, m.entry, m.cursor)
+	m.session.SetExchanges(exchanges)
+	m.session.Settings = m.data.Lists[m.list].Settings
+	m.screen = practice
 }
-func (m *Model) browseView() string {
-	title := "Lists"
-	var rows []string
-	switch m.screen {
-	case lists:
-		for _, l := range m.data.Lists {
-			rows = append(rows, l.Name)
-		}
-	case entries:
-		title = m.data.Lists[m.list].Name
-		for _, e := range m.data.Lists[m.list].Entries {
-			rows = append(rows, e.Title+" (exchange)")
-		}
-	case lines:
-		title = m.data.Lists[m.list].Entries[m.entry].Title
-		for _, l := range m.currentLines() {
-			role, _ := station(l)
-			rows = append(rows, role+" · "+l.CW)
-		}
-	}
-	var b strings.Builder
-	fmt.Fprintf(&b, "cw-looper · Saved\n\n%s\n\n", title)
-	if len(rows) == 0 {
-		b.WriteString("No saved material. Editing is not part of this skeleton.\n")
-	}
-	start := max(0, m.cursor-(m.height-10)+1)
-	for i := start; i < min(len(rows), start+m.height-10); i++ {
-		marker := " "
-		if i == m.cursor {
-			marker = ">"
-		}
-		fmt.Fprintf(&b, "%s %s\n", marker, clip(rows[i], m.width-4))
-	}
-	b.WriteString("\nj/k or arrows select · Enter/l open · Esc/h back · ? help · q quit")
-	return b.String()
+
+type progressMsg struct{ id uint64 }
+
+func progressTick(id uint64) tea.Cmd {
+	return tea.Tick(25*time.Millisecond, func(time.Time) tea.Msg { return progressMsg{id} })
 }
-func (m *Model) practiceView() string {
-	line := m.currentLines()[m.session.Line]
-	role, hz := station(line)
-	text := wrap(line.CW, min(m.width-6, 100))
-	status := string(m.session.Phase)
-	if m.session.Phase == session.Paused {
-		status += " · Space restarts the interrupted portion"
+
+func (m *Model) Unsaved() bool { return m.dirty || m.saving }
+func (m *Model) Saving() bool  { return m.saving }
+
+// Both save completion and output cleanup can finish first. Decide exit only
+// here, after output is stopped, so failure never silently discards edits.
+func (m *Model) finishExit() tea.Cmd {
+	if m.forceExit {
+		return tea.Quit
 	}
-	if m.session.Phase == session.Failed {
-		status = wrap(m.session.Err.Error(), m.width-6) + "\nEnter retries · restart app if indicated"
+	if m.saving {
+		m.exitAfterSave = true
+		return nil
 	}
-	boundary := ""
-	if m.session.Line == len(m.currentLines())-1 {
-		boundary = "Last line · ] next item or Esc library\n"
+	if !m.dirty {
+		return tea.Quit
 	}
-	return fmt.Sprintf("cw-looper · %s · Line %d of %d\nStation: %s · %d Hz\n\n%s\n\n%s · Completed: %d\n20 character / 15 overall WPM · Pause 2 s\nWhole line · CW only · Repeat current\n\n%sSpace pause · h/l or arrows previous/next line\n[/] previous/next item · s speak · Esc library · ? help · q quit",
-		clip(m.data.Lists[m.list].Entries[m.entry].Title, 40), m.session.Line+1, len(m.currentLines()), role, hz, text, status, m.session.Count, boundary)
-}
-func station(line library.Line) (string, int) {
-	if line.Station == "other" {
-		return "Other", 600
-	}
-	return "You", 440
-}
-func clip(s string, width int) string {
-	r := []rune(s)
-	if len(r) > width {
-		return string(r[:max(0, width-1)]) + "…"
-	}
-	return s
-}
-func wrap(s string, width int) string {
-	var lines []string
-	r := []rune(s)
-	for len(r) > width {
-		lines = append(lines, string(r[:width]))
-		r = r[width:]
-	}
-	return strings.Join(append(lines, string(r)), "\n")
+	m.session.CancelQuit()
+	return m.dispatch(session.Input{Kind: session.Back})
 }

@@ -17,14 +17,14 @@ func TestSeedRoundTripAndLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if data.Lists[0].Entries[0].Lines[1].CW != "W1AW DE KE2ISH K" {
-		t.Fatal("wrong fixture")
+	if data.Lists[0].Entries[0].Lines[0].CW != "KE2ISH" {
+		t.Fatal("wrong starter callsign")
 	}
 	if second, err := library.Open(path); err == nil {
 		second.Close()
 		t.Fatal("concurrent writer admitted")
 	}
-	data.Lists[0].Entries[0].Lines[1].CW = "KE2ISH"
+	data.Lists[0].Entries[0].Lines[0].CW = "KE2ISH TEST"
 	if err := store.Save(data); err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestSeedRoundTripAndLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if data.Lists[0].Entries[0].Lines[1].CW != "KE2ISH" {
+	if data.Lists[0].Entries[0].Lines[0].CW != "KE2ISH TEST" {
 		t.Fatal("edit overwritten")
 	}
 	data.Lists = nil

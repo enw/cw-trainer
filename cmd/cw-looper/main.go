@@ -23,14 +23,28 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("open %s: %w", *dataPath, err)
 	}
-	defer store.Close()
+	var model *terminal.Model
+	defer func() {
+		if model == nil || !model.Saving() {
+			_ = store.Close()
+		}
+	}()
 	data, err := store.Load()
 	if err != nil {
 		return fmt.Errorf("load %s: %w; existing data preserved, correct the file before retrying", *dataPath, err)
 	}
 	runner := output.NewRunner(&output.Mac{})
 	defer runner.Close()
-	_, err = tea.NewProgram(terminal.New(data, runner)).Run()
+	model = terminal.New(data, runner, store.Save)
+	defer func() {
+		if closeErr := model.CloseMIDI(); closeErr != nil {
+			fmt.Fprintln(os.Stderr, closeErr)
+		}
+	}()
+	_, err = tea.NewProgram(model).Run()
+	if err == nil && model.Unsaved() {
+		return fmt.Errorf("exited with unsaved changes; the last successfully saved library is preserved")
+	}
 	return err
 }
 func main() {

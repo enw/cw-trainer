@@ -4,19 +4,19 @@
 
 **Blocked by:** 02 — Create and practice saved message lists.
 
-**Status:** draft — design and skeleton must inform feature readiness
+**Status:** implemented — continuous tokens, picker and timing tests
 
-- [ ] Provide a picker of supported common prosigns with meanings, inserting angle-bracket notation such as <AR>.
-- [ ] Play a prosign as one continuous signal without inter-letter spacing; ordinary AR remains separately spaced letters.
-- [ ] Support mixed items such as CQ CQ DE KE2ISH <AR>, preserving ordinary letter/word spacing around complete prosigns.
-- [ ] Validate the entire item before playback; report unknown/malformed prosigns without partially playing or silently modifying the message.
-- [ ] Store meaning and default spoken phrase information for supported prosigns, ready for speech playback.
-- [ ] Verify mappings and procedural meanings against authoritative references and record the sources.
-- [ ] Independently verify continuous prosign timing and mixed-phrase boundaries, including saved-item round trips.
+- [x] Provide a picker of supported common prosigns with meanings, inserting angle-bracket notation such as <AR>.
+- [x] Play a prosign as one continuous signal without inter-letter spacing; ordinary AR remains separately spaced letters.
+- [x] Support mixed items such as CQ CQ DE KE2ISH <AR>, preserving ordinary letter/word spacing around complete prosigns.
+- [x] Validate the entire item before playback; report unknown/malformed prosigns without partially playing or silently modifying the message.
+- [x] Store meaning and default spoken phrase information for supported prosigns, ready for speech playback.
+- [x] Verify mappings and procedural meanings against authoritative references and record the sources.
+- [x] Independently verify continuous prosign timing and mixed-phrase boundaries, including saved-item round trips.
 
 ## Design reference
 
 Follow the [ticket 00 UI decisions](../../../docs/design/terminal-ui.md) and
 [playback architecture](../../../docs/design/playback-architecture.md).
 Design is approved. Skeleton software is implemented, with listening acceptance
-pending. This ticket has not started.
+pending. Software verification passed; acoustic acceptance remains in the verification record.

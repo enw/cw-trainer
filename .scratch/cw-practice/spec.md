@@ -237,7 +237,35 @@ The edge behaviors discussed during specification are resolved in the
 [ticket 00 UI design](../../docs/design/terminal-ui.md) and
 [playback architecture](../../docs/design/playback-architecture.md).
 Those documents are the single source for navigation, pause/resume, speech
-counts, shuffle, reveal lifetime, and playback-unit transitions. The user approved
-the design and ticket 01 implementation. The walking skeleton now has software
-and real-output lifecycle verification; final listening acceptance is still
-pending. See the [verification record](../../docs/design/skeleton-verification.md).
+counts, shuffle, reveal lifetime, and playback-unit transitions. The user approved the design, ticket 01, and then the remaining 02–10 build.
+The complete implementation has software and real-output lifecycle verification;
+final human listening acceptance is still pending. See the
+[verification record](../../docs/design/complete-verification.md).
+
+## Requested follow-ups (2026-10-16)
+
+The user requested issues for NATO phonetic-alphabet and RST-system learning,
+using the ARRL Quick Reference Operating Aids. Tickets 11 and 12 in the canonical
+map capture these additions. They are queued for later scope review and
+implementation; the current implementation remains tickets 02–10.
+
+
+### Vail sending-practice follow-ups
+
+The user also requested follow-up tickets for their Vail adapter's capacitive
+touch pads, configured for Iambic B. The sequence is hardware/MIDI verification,
+then listen → send back → replay, followed by decoding and timing feedback.
+Capture would use USB MIDI mark events, not a microphone. Adapter sidetone and
+onboard keyer timing remain local. Upstream MIDI documentation is not proof
+that this user's firmware is emitting MIDI; verify the actual path first.
+
+Tickets 13–15 extend the original listening-only scope as queued work. The
+original out-of-scope keying exclusions still describe the shipped 00–10 app;
+no sending integration has been implemented or hardware reconfigured here.
+
+
+Hardware follow-up: on 2026-10-16, a cooperative CoreMIDI probe received actual
+mark events from the user's QT Py M0 adapter, with ~80 ms dits and ~240 ms dahs,
+held repeats and squeeze alternation. The user confirmed local sidetone. The
+probe restored keyboard output afterward. See the Vail verification record;
+this verifies hardware input, not an implemented sending feature in the app.

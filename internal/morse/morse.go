@@ -19,7 +19,13 @@ type Segment struct {
 	Start, End int64
 	Tone       bool
 }
+type Marker struct {
+	Start, End int64
+	From, To   int
+}
 type Timeline struct {
+	Text     string
+	Markers  []Marker
 	Segments []Segment
 	Samples  int64
 }
@@ -38,12 +44,11 @@ func Compile(text string, character, overall float64, calibration bool) (Timelin
 	if text == "" {
 		return result, fmt.Errorf("CW text is empty")
 	}
-	for _, c := range text {
-		if c != ' ' && alphabet[c] == "" {
-			return result, fmt.Errorf("unsupported CW character %q; use A–Z, 0–9 and spaces", c)
-		}
+	tokens, err := Tokens(text)
+	if err != nil {
+		return result, err
 	}
-	words := strings.Fields(text)
+	result.Text = text
 	dit := 1.2 / character
 	space := (60/overall - 31*dit) / 19
 	elapsed := 0.0
@@ -53,26 +58,29 @@ func Compile(text string, character, overall float64, calibration bool) (Timelin
 		result.Samples = int64(math.Round(elapsed * SampleRate))
 		result.Segments = append(result.Segments, Segment{start, result.Samples, tone})
 	}
-	for wi, word := range words {
-		if wi > 0 {
-			add(false, 7*space)
-		}
-		for ci, c := range word {
-			if ci > 0 {
-				add(false, 3*space)
+
+	for i, token := range tokens {
+		if i > 0 {
+			gap := 3 * space
+			if token.WordGap {
+				gap = 7 * space
 			}
-			for ei, element := range alphabet[c] {
-				if ei > 0 {
-					add(false, dit)
-				}
-				length := dit
-				if element == '-' {
-					length *= 3
-				}
-				add(true, length)
-			}
+			add(false, gap)
 		}
+		start := result.Samples
+		for j, e := range token.Code {
+			if j > 0 {
+				add(false, dit)
+			}
+			duration := dit
+			if e == '-' {
+				duration *= 3
+			}
+			add(true, duration)
+		}
+		result.Markers = append(result.Markers, Marker{start, result.Samples, token.Start, token.End})
 	}
+
 	if calibration {
 		add(false, 7*space)
 	}
