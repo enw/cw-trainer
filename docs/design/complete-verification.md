@@ -79,7 +79,8 @@ spec found three behavior defects. Their overlapping findings were resolved:
   unsaved state. A still-running emergency save retains its OS lock until exit.
 - Follow-up review found two quit/save edge cases. Failed saves now keep edited
   data available for retry or explicit discard, and Ctrl+C can exit even after
-  normal quit has begun waiting for a save. Both paths have regressions.
+  normal quit has begun waiting for a save. Both paths have regressions, including save failure arriving before or after
+  output cleanup; one final exit decision handles either ordering.
 
 ## Remaining human acceptance
 

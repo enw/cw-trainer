@@ -62,11 +62,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.exitAfterSave {
 			m.exitAfterSave = false
-			if msg.err == nil {
-				return m, tea.Quit
-			}
-			m.session.CancelQuit()
-			return m, m.dispatch(session.Input{Kind: session.Back})
+			return m, m.finishExit()
 		}
 		return m, nil
 	case session.Input:
@@ -107,7 +103,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.persist()
 		}
 		if key == "q" && m.dirty {
-			m.confirm = &confirmation{"Discard unsaved changes and quit?", func() tea.Cmd { return m.dispatch(session.Input{Kind: session.Quit}) }}
+			m.confirm = &confirmation{"Discard unsaved changes and quit?", func() tea.Cmd { m.forceExit = true; return m.dispatch(session.Input{Kind: session.Quit}) }}
 			return m, nil
 		}
 		if key == "q" || key == "ctrl+c" {
@@ -162,11 +158,7 @@ func (m *Model) applyEffects(effects []session.Effect) tea.Cmd {
 	exiting := false
 	for _, effect := range effects {
 		if effect.Kind == session.Exit {
-			if m.saving && !m.forceExit {
-				m.exitAfterSave = true
-			} else {
-				cmds = append(cmds, tea.Quit)
-			}
+			cmds = append(cmds, m.finishExit())
 			exiting = true
 			continue
 		}
@@ -296,3 +288,20 @@ func progressTick(id uint64) tea.Cmd {
 
 func (m *Model) Unsaved() bool { return m.dirty || m.saving }
 func (m *Model) Saving() bool  { return m.saving }
+
+// Both save completion and output cleanup can finish first. Decide exit only
+// here, after output is stopped, so failure never silently discards edits.
+func (m *Model) finishExit() tea.Cmd {
+	if m.forceExit {
+		return tea.Quit
+	}
+	if m.saving {
+		m.exitAfterSave = true
+		return nil
+	}
+	if !m.dirty {
+		return tea.Quit
+	}
+	m.session.CancelQuit()
+	return m.dispatch(session.Input{Kind: session.Back})
+}

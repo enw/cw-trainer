@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestExchangeEditorPersistsRolesSpeechAndOrder(t *testing.T) {
@@ -131,5 +132,31 @@ func TestSaveFailureDuringQuitRetainsRetryAndEmergencyExit(t *testing.T) {
 				t.Fatal("could not explicitly discard after failed quit")
 			}
 		}
+	}
+}
+
+func TestSaveFailureBeforeOutputStopsRetainsEdits(t *testing.T) {
+	m := New(library.Fixture(), output.NewRunner(nil))
+	m.screen = practice
+	m.session.Select(2, 0)
+	m.session.Update(session.Input{Kind: session.Start}, time.Now())
+	m.saving = true
+	m.dirty = true
+	_, stop := m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"})
+	if stop == nil {
+		t.Fatal("quit did not request cleanup")
+	}
+	m.Update(savedMsg{errors.New("disk full before stop")})
+	_, exit := m.Update(stop())
+	if exit != nil || !m.Unsaved() || m.screen == practice {
+		t.Fatal("save failure before cleanup lost edited state")
+	}
+	m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"})
+	if m.confirm == nil {
+		t.Fatal("explicit discard not offered")
+	}
+	_, exit = m.Update(tea.KeyPressMsg{Code: 'y', Text: "y"})
+	if exit == nil {
+		t.Fatal("explicit discard did not quit")
 	}
 }
